@@ -94,7 +94,7 @@ namespace Bitmex.NET
             string error = string.Empty;
             string status = string.Empty;
             var errorArgs = new string[0];
-            OperationResultEventHandler resultReceived = args =>
+            void ResultReceived(object sender, OperationResultEventArgs args)
             {
                 if (args.OperationType == OperationType.subscribe)
                 {
@@ -104,12 +104,12 @@ namespace Bitmex.NET
                     errorArgs = args.Args;
                     respReceived.Set();
                 }
-            };
-            _bitmexApiSocketProxy.OperationResultReceived += resultReceived;
+            }
+            _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
             Log.Info($"Subscribing on {subscriptionName}...");
             _bitmexApiSocketProxy.Send(message);
             var waitReuslt = respReceived.WaitOne(SocketMessageResponseTimeout);
-            _bitmexApiSocketProxy.OperationResultReceived -= resultReceived;
+            _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
             if (!waitReuslt)
             {
                 throw new BitmexSocketSubscriptionException("Subscription failed: timeout waiting subscription response");
@@ -117,7 +117,6 @@ namespace Bitmex.NET
 
             if (success)
             {
-
                 Log.Info($"Successfully subscribed on {subscriptionName} ");
                 if (!_actions.ContainsKey(subscription.SubscriptionName))
                 {
@@ -145,7 +144,7 @@ namespace Bitmex.NET
                 string error = string.Empty;
                 string status = string.Empty;
                 var errorArgs = new string[0];
-                OperationResultEventHandler resultReceived = args =>
+                void ResultReceived(object sender, OperationResultEventArgs args)
                 {
                     if (args.OperationType == OperationType.unsubscribe)
                     {
@@ -155,12 +154,12 @@ namespace Bitmex.NET
                         errorArgs = args.Args;
                         semafore.Release(1);
                     }
-                };
-                _bitmexApiSocketProxy.OperationResultReceived += resultReceived;
+                }
+                _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
                 Log.Info($"Unsubscribing on {subscriptionName}...");
                 _bitmexApiSocketProxy.Send(message);
                 var waitReuslt = await semafore.WaitAsync(SocketMessageResponseTimeout);
-                _bitmexApiSocketProxy.OperationResultReceived -= resultReceived;
+                _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
                 if (!waitReuslt)
                 {
                     throw new BitmexSocketSubscriptionException("Unsubscription failed: timeout waiting unsubscription response");
@@ -168,7 +167,6 @@ namespace Bitmex.NET
 
                 if (success)
                 {
-
                     Log.Info($"Successfully unsubscribed on {subscriptionName} ");
                     if (_actions.ContainsKey(subscription.SubscriptionName))
                     {
@@ -199,7 +197,7 @@ namespace Bitmex.NET
             var respReceived = new ManualResetEvent(false);
             var data = new string[0];
             var error = string.Empty;
-            OperationResultEventHandler resultReceived = args =>
+            void ResultReceived(object sender, OperationResultEventArgs args)
             {
                 if (args.OperationType == OperationType.authKeyExpires)
                 {
@@ -212,11 +210,11 @@ namespace Bitmex.NET
 
             var signatureString = _signatureProvider.CreateSignature(_bitmexAuthorization.Secret, $"GET/realtime{expiresTime}");
             var message = new SocketAuthorizationMessage(_bitmexAuthorization.Key, expiresTime, signatureString);
-            _bitmexApiSocketProxy.OperationResultReceived += resultReceived;
+            _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
             Log.Info("Authorizing...");
             _bitmexApiSocketProxy.Send(message);
             var waitResult = respReceived.WaitOne(SocketMessageResponseTimeout);
-            _bitmexApiSocketProxy.OperationResultReceived -= resultReceived;
+            _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
             if (!waitResult)
             {
                 Log.Error("Timeout waiting authorization response");
@@ -233,7 +231,7 @@ namespace Bitmex.NET
             return IsAuthorized;
         }
 
-        private void BitmexApiSocketProxyDataReceived(DataEventArgs args)
+        private void BitmexApiSocketProxyDataReceived(object sender, DataEventArgs args)
         {
             if (_actions.ContainsKey(args.TableName))
             {

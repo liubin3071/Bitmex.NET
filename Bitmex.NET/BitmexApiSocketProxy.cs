@@ -15,13 +15,19 @@ namespace Bitmex.NET
 {
     public interface IBitmexApiSocketProxy : IDisposable
     {
-        event SocketDataEventHandler DataReceived;
-        event OperationResultEventHandler OperationResultReceived;
-        event BitmextErrorEventHandler ErrorReceived;
-        event BitmexCloseEventHandler Closed;
+        event EventHandler<DataEventArgs> DataReceived;
+
+        event EventHandler<OperationResultEventArgs> OperationResultReceived;
+
+        event EventHandler<BitmextErrorEventArgs> ErrorReceived;
+
+        event EventHandler<BitmexCloseEventArgs> Closed;
+
         bool Connect();
+
         void Send<TMessage>(TMessage message)
             where TMessage : SocketMessage;
+
         bool IsAlive { get; }
     }
 
@@ -31,10 +37,15 @@ namespace Bitmex.NET
         private const int SocketMessageResponseTimeout = 10000;
         private readonly ManualResetEvent _welcomeReceived = new ManualResetEvent(false);
         private readonly IBitmexAuthorization _bitmexAuthorization;
-        public event SocketDataEventHandler DataReceived;
-        public event OperationResultEventHandler OperationResultReceived;
-        public event BitmextErrorEventHandler ErrorReceived;
-        public event BitmexCloseEventHandler Closed;
+
+        public event EventHandler<DataEventArgs> DataReceived;
+
+        public event EventHandler<OperationResultEventArgs> OperationResultReceived;
+
+        public event EventHandler<BitmextErrorEventArgs> ErrorReceived;
+
+        public event EventHandler<BitmexCloseEventArgs> Closed;
+
         private WebSocket _socketConnection;
 
         public bool IsAlive => _socketConnection?.State == WebSocketState.Open;
@@ -122,7 +133,6 @@ namespace Bitmex.NET
             OnErrorReceived(e);
         }
 
-
         private void SocketConnectionOnClosed(object sender, EventArgs e)
         {
             OnClosed();
@@ -138,24 +148,24 @@ namespace Bitmex.NET
 
         protected virtual void OnDataReceived(DataEventArgs args)
         {
-            DataReceived?.Invoke(args);
+            DataReceived?.Invoke(this, args);
         }
 
         protected virtual void OnOperationResultReceived(OperationResultEventArgs args)
         {
-            OperationResultReceived?.Invoke(args);
+            OperationResultReceived?.Invoke(this, args);
         }
 
         protected virtual void OnErrorReceived(ErrorEventArgs args)
         {
             Log.Error(args.Exception, "Socket connection");
-            ErrorReceived?.Invoke(new BitmextErrorEventArgs(args.Exception));
+            ErrorReceived?.Invoke(this, new BitmextErrorEventArgs(args.Exception));
         }
 
         protected virtual void OnClosed()
         {
             Log.Debug("Connection closed");
-            Closed?.Invoke(new BitmexCloseEventArgs());
+            Closed?.Invoke(this, new BitmexCloseEventArgs());
         }
 
         public void Dispose()
