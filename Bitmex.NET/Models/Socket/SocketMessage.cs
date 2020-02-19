@@ -1,20 +1,28 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Models.Socket
 {
-	public abstract class SocketMessage
-	{
-		[JsonProperty("op")]
-		public string Operation { get; }
-		[JsonProperty("args")]
-		public object[] Arguments { get; }
+    public interface ISocketRequestMessage
+    {
+        string GetContent();
+    }
 
-		protected SocketMessage(OperationType operation, params object[] args)
-		{
+    public abstract class SocketMessage : ISocketRequestMessage
+    {
+        [JsonPropertyName("op")]
+        public string Operation { get; }
 
-			Operation = Enum.GetName(typeof(OperationType), operation);
-			Arguments = args;
-		}
-	}
+        [JsonPropertyName("args")]
+        public object[] Arguments { get; }
+
+        protected SocketMessage(OperationType operation, params object[] args)
+        {
+            Operation = Enum.GetName(typeof(OperationType), operation);
+            Arguments = args;
+        }
+
+        public string GetContent() => BitmexJsonSerializer.Serialize(this);
+    }
 }

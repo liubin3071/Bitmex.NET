@@ -1,310 +1,310 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
-	public class InstrumentDto
-	{
-		[JsonProperty("symbol")]
-		public string Symbol { get; set; }
+    public class InstrumentDto
+    {
+        [JsonPropertyName("symbol")]
+        public string Symbol { get; set; }
 
-		[JsonProperty("rootSymbol")]
-		public string RootSymbol { get; set; }
+        [JsonPropertyName("rootSymbol")]
+        public string RootSymbol { get; set; }
 
-		[JsonProperty("state")]
-		public string State { get; set; }
+        [JsonPropertyName("state")]
+        public string State { get; set; }
 
-		[JsonProperty("typ")]
-		public string Typ { get; set; }
+        [JsonPropertyName("typ")]
+        public string Typ { get; set; }
 
-		[JsonProperty("listing")]
-		public System.DateTimeOffset? Listing { get; set; }
+        [JsonPropertyName("listing")]
+        public System.DateTimeOffset? Listing { get; set; }
 
-		[JsonProperty("front")]
-		public System.DateTimeOffset? Front { get; set; }
+        [JsonPropertyName("front")]
+        public System.DateTimeOffset? Front { get; set; }
 
-		[JsonProperty("expiry")]
-		public System.DateTimeOffset? Expiry { get; set; }
+        [JsonPropertyName("expiry")]
+        public System.DateTimeOffset? Expiry { get; set; }
 
-		[JsonProperty("settle")]
-		public System.DateTimeOffset? Settle { get; set; }
+        [JsonPropertyName("settle")]
+        public System.DateTimeOffset? Settle { get; set; }
 
-		[JsonProperty("relistInterval")]
-		public System.DateTimeOffset? RelistInterval { get; set; }
+        [JsonPropertyName("relistInterval")]
+        public System.DateTimeOffset? RelistInterval { get; set; }
 
-		[JsonProperty("inverseLeg")]
-		public string InverseLeg { get; set; }
+        [JsonPropertyName("inverseLeg")]
+        public string InverseLeg { get; set; }
 
-		[JsonProperty("sellLeg")]
-		public string SellLeg { get; set; }
+        [JsonPropertyName("sellLeg")]
+        public string SellLeg { get; set; }
 
-		[JsonProperty("buyLeg")]
-		public string BuyLeg { get; set; }
+        [JsonPropertyName("buyLeg")]
+        public string BuyLeg { get; set; }
 
-		[JsonProperty("optionStrikePcnt")]
-		public decimal? OptionStrikePcnt { get; set; }
+        [JsonPropertyName("optionStrikePcnt")]
+        public decimal? OptionStrikePcnt { get; set; }
 
-		[JsonProperty("optionStrikeRound")]
-		public decimal? OptionStrikeRound { get; set; }
+        [JsonPropertyName("optionStrikeRound")]
+        public decimal? OptionStrikeRound { get; set; }
 
-		[JsonProperty("optionStrikePrice")]
-		public decimal? OptionStrikePrice { get; set; }
+        [JsonPropertyName("optionStrikePrice")]
+        public decimal? OptionStrikePrice { get; set; }
 
-		[JsonProperty("optionMultiplier")]
-		public decimal? OptionMultiplier { get; set; }
+        [JsonPropertyName("optionMultiplier")]
+        public decimal? OptionMultiplier { get; set; }
 
-		[JsonProperty("positionCurrency")]
-		public string PositionCurrency { get; set; }
+        [JsonPropertyName("positionCurrency")]
+        public string PositionCurrency { get; set; }
 
-		[JsonProperty("underlying")]
-		public string Underlying { get; set; }
+        [JsonPropertyName("underlying")]
+        public string Underlying { get; set; }
 
-		[JsonProperty("quoteCurrency")]
-		public string QuoteCurrency { get; set; }
+        [JsonPropertyName("quoteCurrency")]
+        public string QuoteCurrency { get; set; }
 
-		[JsonProperty("underlyingSymbol")]
-		public string UnderlyingSymbol { get; set; }
+        [JsonPropertyName("underlyingSymbol")]
+        public string UnderlyingSymbol { get; set; }
 
-		[JsonProperty("reference")]
-		public string Reference { get; set; }
+        [JsonPropertyName("reference")]
+        public string Reference { get; set; }
 
-		[JsonProperty("referenceSymbol")]
-		public string ReferenceSymbol { get; set; }
+        [JsonPropertyName("referenceSymbol")]
+        public string ReferenceSymbol { get; set; }
 
-		[JsonProperty("calcInterval")]
-		public System.DateTimeOffset? CalcInterval { get; set; }
+        [JsonPropertyName("calcInterval")]
+        public System.DateTimeOffset? CalcInterval { get; set; }
 
-		[JsonProperty("publishInterval")]
-		public System.DateTimeOffset? PublishInterval { get; set; }
+        [JsonPropertyName("publishInterval")]
+        public System.DateTimeOffset? PublishInterval { get; set; }
 
-		[JsonProperty("publishTime")]
-		public System.DateTimeOffset? PublishTime { get; set; }
+        [JsonPropertyName("publishTime")]
+        public System.DateTimeOffset? PublishTime { get; set; }
 
-		[JsonProperty("maxOrderQty")]
-		public decimal? MaxOrderQty { get; set; }
+        [JsonPropertyName("maxOrderQty")]
+        public decimal? MaxOrderQty { get; set; }
 
-		[JsonProperty("maxPrice")]
-		public decimal? MaxPrice { get; set; }
+        [JsonPropertyName("maxPrice")]
+        public decimal? MaxPrice { get; set; }
 
-		[JsonProperty("lotSize")]
-		public decimal? LotSize { get; set; }
+        [JsonPropertyName("lotSize")]
+        public decimal? LotSize { get; set; }
 
-		[JsonProperty("tickSize")]
-		public decimal? TickSize { get; set; }
+        [JsonPropertyName("tickSize")]
+        public decimal? TickSize { get; set; }
 
-		[JsonProperty("multiplier")]
-		public decimal? Multiplier { get; set; }
+        [JsonPropertyName("multiplier")]
+        public decimal? Multiplier { get; set; }
 
-		[JsonProperty("settlCurrency")]
-		public string SettlCurrency { get; set; }
+        [JsonPropertyName("settlCurrency")]
+        public string SettlCurrency { get; set; }
 
-		[JsonProperty("underlyingToPositionMultiplier")]
-		public decimal? UnderlyingToPositionMultiplier { get; set; }
+        [JsonPropertyName("underlyingToPositionMultiplier")]
+        public decimal? UnderlyingToPositionMultiplier { get; set; }
 
-		[JsonProperty("underlyingToSettleMultiplier")]
-		public decimal? UnderlyingToSettleMultiplier { get; set; }
+        [JsonPropertyName("underlyingToSettleMultiplier")]
+        public decimal? UnderlyingToSettleMultiplier { get; set; }
 
-		[JsonProperty("quoteToSettleMultiplier")]
-		public decimal? QuoteToSettleMultiplier { get; set; }
+        [JsonPropertyName("quoteToSettleMultiplier")]
+        public decimal? QuoteToSettleMultiplier { get; set; }
 
-		[JsonProperty("isQuanto")]
-		public bool? IsQuanto { get; set; }
+        [JsonPropertyName("isQuanto")]
+        public bool? IsQuanto { get; set; }
 
-		[JsonProperty("isInverse")]
-		public bool? IsInverse { get; set; }
+        [JsonPropertyName("isInverse")]
+        public bool? IsInverse { get; set; }
 
-		[JsonProperty("initMargin")]
-		public decimal? InitMargin { get; set; }
+        [JsonPropertyName("initMargin")]
+        public decimal? InitMargin { get; set; }
 
-		[JsonProperty("maintMargin")]
-		public decimal? MaintMargin { get; set; }
+        [JsonPropertyName("maintMargin")]
+        public decimal? MaintMargin { get; set; }
 
-		[JsonProperty("riskLimit")]
-		public decimal? RiskLimit { get; set; }
+        [JsonPropertyName("riskLimit")]
+        public decimal? RiskLimit { get; set; }
 
-		[JsonProperty("riskStep")]
-		public decimal? RiskStep { get; set; }
+        [JsonPropertyName("riskStep")]
+        public decimal? RiskStep { get; set; }
 
-		[JsonProperty("limit")]
-		public decimal? Limit { get; set; }
+        [JsonPropertyName("limit")]
+        public decimal? Limit { get; set; }
 
-		[JsonProperty("capped")]
-		public bool? Capped { get; set; }
+        [JsonPropertyName("capped")]
+        public bool? Capped { get; set; }
 
-		[JsonProperty("taxed")]
-		public bool? Taxed { get; set; }
+        [JsonPropertyName("taxed")]
+        public bool? Taxed { get; set; }
 
-		[JsonProperty("deleverage")]
-		public bool? Deleverage { get; set; }
+        [JsonPropertyName("deleverage")]
+        public bool? Deleverage { get; set; }
 
-		[JsonProperty("makerFee")]
-		public decimal? MakerFee { get; set; }
+        [JsonPropertyName("makerFee")]
+        public decimal? MakerFee { get; set; }
 
-		[JsonProperty("takerFee")]
-		public decimal? TakerFee { get; set; }
+        [JsonPropertyName("takerFee")]
+        public decimal? TakerFee { get; set; }
 
-		[JsonProperty("settlementFee")]
-		public decimal? SettlementFee { get; set; }
+        [JsonPropertyName("settlementFee")]
+        public decimal? SettlementFee { get; set; }
 
-		[JsonProperty("insuranceFee")]
-		public decimal? InsuranceFee { get; set; }
+        [JsonPropertyName("insuranceFee")]
+        public decimal? InsuranceFee { get; set; }
 
-		[JsonProperty("fundingBaseSymbol")]
-		public string FundingBaseSymbol { get; set; }
+        [JsonPropertyName("fundingBaseSymbol")]
+        public string FundingBaseSymbol { get; set; }
 
-		[JsonProperty("fundingQuoteSymbol")]
-		public string FundingQuoteSymbol { get; set; }
+        [JsonPropertyName("fundingQuoteSymbol")]
+        public string FundingQuoteSymbol { get; set; }
 
-		[JsonProperty("fundingPremiumSymbol")]
-		public string FundingPremiumSymbol { get; set; }
+        [JsonPropertyName("fundingPremiumSymbol")]
+        public string FundingPremiumSymbol { get; set; }
 
-		[JsonProperty("fundingTimestamp")]
-		public System.DateTimeOffset? FundingTimestamp { get; set; }
+        [JsonPropertyName("fundingTimestamp")]
+        public System.DateTimeOffset? FundingTimestamp { get; set; }
 
-		[JsonProperty("fundingInterval")]
-		public System.DateTimeOffset? FundingInterval { get; set; }
+        [JsonPropertyName("fundingInterval")]
+        public System.DateTimeOffset? FundingInterval { get; set; }
 
-		[JsonProperty("fundingRate")]
-		public decimal? FundingRate { get; set; }
+        [JsonPropertyName("fundingRate")]
+        public decimal? FundingRate { get; set; }
 
-		[JsonProperty("indicativeFundingRate")]
-		public decimal? IndicativeFundingRate { get; set; }
+        [JsonPropertyName("indicativeFundingRate")]
+        public decimal? IndicativeFundingRate { get; set; }
 
-		[JsonProperty("rebalanceTimestamp")]
-		public System.DateTimeOffset? RebalanceTimestamp { get; set; }
+        [JsonPropertyName("rebalanceTimestamp")]
+        public System.DateTimeOffset? RebalanceTimestamp { get; set; }
 
-		[JsonProperty("rebalanceInterval")]
-		public System.DateTimeOffset? RebalanceInterval { get; set; }
+        [JsonPropertyName("rebalanceInterval")]
+        public System.DateTimeOffset? RebalanceInterval { get; set; }
 
-		[JsonProperty("openingTimestamp")]
-		public System.DateTimeOffset? OpeningTimestamp { get; set; }
+        [JsonPropertyName("openingTimestamp")]
+        public System.DateTimeOffset? OpeningTimestamp { get; set; }
 
-		[JsonProperty("closingTimestamp")]
-		public System.DateTimeOffset? ClosingTimestamp { get; set; }
+        [JsonPropertyName("closingTimestamp")]
+        public System.DateTimeOffset? ClosingTimestamp { get; set; }
 
-		[JsonProperty("sessionInterval")]
-		public System.DateTimeOffset? SessionInterval { get; set; }
+        [JsonPropertyName("sessionInterval")]
+        public System.DateTimeOffset? SessionInterval { get; set; }
 
-		[JsonProperty("prevClosePrice")]
-		public decimal? PrevClosePrice { get; set; }
+        [JsonPropertyName("prevClosePrice")]
+        public decimal? PrevClosePrice { get; set; }
 
-		[JsonProperty("limitDownPrice")]
-		public decimal? LimitDownPrice { get; set; }
+        [JsonPropertyName("limitDownPrice")]
+        public decimal? LimitDownPrice { get; set; }
 
-		[JsonProperty("limitUpPrice")]
-		public decimal? LimitUpPrice { get; set; }
+        [JsonPropertyName("limitUpPrice")]
+        public decimal? LimitUpPrice { get; set; }
 
-		[JsonProperty("bankruptLimitDownPrice")]
-		public decimal? BankruptLimitDownPrice { get; set; }
+        [JsonPropertyName("bankruptLimitDownPrice")]
+        public decimal? BankruptLimitDownPrice { get; set; }
 
-		[JsonProperty("bankruptLimitUpPrice")]
-		public decimal? BankruptLimitUpPrice { get; set; }
+        [JsonPropertyName("bankruptLimitUpPrice")]
+        public decimal? BankruptLimitUpPrice { get; set; }
 
-		[JsonProperty("prevTotalVolume")]
-		public decimal? PrevTotalVolume { get; set; }
+        [JsonPropertyName("prevTotalVolume")]
+        public decimal? PrevTotalVolume { get; set; }
 
-		[JsonProperty("totalVolume")]
-		public decimal? TotalVolume { get; set; }
+        [JsonPropertyName("totalVolume")]
+        public decimal? TotalVolume { get; set; }
 
-		[JsonProperty("volume")]
-		public decimal? Volume { get; set; }
+        [JsonPropertyName("volume")]
+        public decimal? Volume { get; set; }
 
-		[JsonProperty("volume24h")]
-		public decimal? Volume24H { get; set; }
+        [JsonPropertyName("volume24h")]
+        public decimal? Volume24H { get; set; }
 
-		[JsonProperty("prevTotalTurnover")]
-		public decimal? PrevTotalTurnover { get; set; }
+        [JsonPropertyName("prevTotalTurnover")]
+        public decimal? PrevTotalTurnover { get; set; }
 
-		[JsonProperty("totalTurnover")]
-		public decimal? TotalTurnover { get; set; }
+        [JsonPropertyName("totalTurnover")]
+        public decimal? TotalTurnover { get; set; }
 
-		[JsonProperty("turnover")]
-		public decimal? Turnover { get; set; }
+        [JsonPropertyName("turnover")]
+        public decimal? Turnover { get; set; }
 
-		[JsonProperty("turnover24h")]
-		public decimal? Turnover24H { get; set; }
+        [JsonPropertyName("turnover24h")]
+        public decimal? Turnover24H { get; set; }
 
-		[JsonProperty("prevPrice24h")]
-		public decimal? PrevPrice24H { get; set; }
+        [JsonPropertyName("prevPrice24h")]
+        public decimal? PrevPrice24H { get; set; }
 
-		[JsonProperty("vwap")]
-		public decimal? Vwap { get; set; }
+        [JsonPropertyName("vwap")]
+        public decimal? Vwap { get; set; }
 
-		[JsonProperty("highPrice")]
-		public decimal? HighPrice { get; set; }
+        [JsonPropertyName("highPrice")]
+        public decimal? HighPrice { get; set; }
 
-		[JsonProperty("lowPrice")]
-		public decimal? LowPrice { get; set; }
+        [JsonPropertyName("lowPrice")]
+        public decimal? LowPrice { get; set; }
 
-		[JsonProperty("lastPrice")]
-		public decimal? LastPrice { get; set; }
+        [JsonPropertyName("lastPrice")]
+        public decimal? LastPrice { get; set; }
 
-		[JsonProperty("lastPriceProtected")]
-		public decimal? LastPriceProtected { get; set; }
+        [JsonPropertyName("lastPriceProtected")]
+        public decimal? LastPriceProtected { get; set; }
 
-		[JsonProperty("lastTickDirection")]
-		public string LastTickDirection { get; set; }
+        [JsonPropertyName("lastTickDirection")]
+        public string LastTickDirection { get; set; }
 
-		[JsonProperty("lastChangePcnt")]
-		public decimal? LastChangePcnt { get; set; }
+        [JsonPropertyName("lastChangePcnt")]
+        public decimal? LastChangePcnt { get; set; }
 
-		[JsonProperty("bidPrice")]
-		public decimal? BidPrice { get; set; }
+        [JsonPropertyName("bidPrice")]
+        public decimal? BidPrice { get; set; }
 
-		[JsonProperty("midPrice")]
-		public decimal? MidPrice { get; set; }
+        [JsonPropertyName("midPrice")]
+        public decimal? MidPrice { get; set; }
 
-		[JsonProperty("askPrice")]
-		public decimal? AskPrice { get; set; }
+        [JsonPropertyName("askPrice")]
+        public decimal? AskPrice { get; set; }
 
-		[JsonProperty("impactBidPrice")]
-		public decimal? ImpactBidPrice { get; set; }
+        [JsonPropertyName("impactBidPrice")]
+        public decimal? ImpactBidPrice { get; set; }
 
-		[JsonProperty("impactMidPrice")]
-		public decimal? ImpactMidPrice { get; set; }
+        [JsonPropertyName("impactMidPrice")]
+        public decimal? ImpactMidPrice { get; set; }
 
-		[JsonProperty("impactAskPrice")]
-		public decimal? ImpactAskPrice { get; set; }
+        [JsonPropertyName("impactAskPrice")]
+        public decimal? ImpactAskPrice { get; set; }
 
-		[JsonProperty("hasLiquidity")]
-		public bool? HasLiquidity { get; set; }
+        [JsonPropertyName("hasLiquidity")]
+        public bool? HasLiquidity { get; set; }
 
-		[JsonProperty("openInterest")]
-		public decimal? OpenInterest { get; set; }
+        [JsonPropertyName("openInterest")]
+        public decimal? OpenInterest { get; set; }
 
-		[JsonProperty("openValue")]
-		public decimal? OpenValue { get; set; }
+        [JsonPropertyName("openValue")]
+        public decimal? OpenValue { get; set; }
 
-		[JsonProperty("fairMethod")]
-		public string FairMethod { get; set; }
+        [JsonPropertyName("fairMethod")]
+        public string FairMethod { get; set; }
 
-		[JsonProperty("fairBasisRate")]
-		public decimal? FairBasisRate { get; set; }
+        [JsonPropertyName("fairBasisRate")]
+        public decimal? FairBasisRate { get; set; }
 
-		[JsonProperty("fairBasis")]
-		public decimal? FairBasis { get; set; }
+        [JsonPropertyName("fairBasis")]
+        public decimal? FairBasis { get; set; }
 
-		[JsonProperty("fairPrice")]
-		public decimal? FairPrice { get; set; }
+        [JsonPropertyName("fairPrice")]
+        public decimal? FairPrice { get; set; }
 
-		[JsonProperty("markMethod")]
-		public string MarkMethod { get; set; }
+        [JsonPropertyName("markMethod")]
+        public string MarkMethod { get; set; }
 
-		[JsonProperty("markPrice")]
-		public decimal? MarkPrice { get; set; }
+        [JsonPropertyName("markPrice")]
+        public decimal? MarkPrice { get; set; }
 
-		[JsonProperty("indicativeTaxRate")]
-		public decimal? IndicativeTaxRate { get; set; }
+        [JsonPropertyName("indicativeTaxRate")]
+        public decimal? IndicativeTaxRate { get; set; }
 
-		[JsonProperty("indicativeSettlePrice")]
-		public decimal? IndicativeSettlePrice { get; set; }
+        [JsonPropertyName("indicativeSettlePrice")]
+        public decimal? IndicativeSettlePrice { get; set; }
 
-		[JsonProperty("optionUnderlyingPrice")]
-		public decimal? OptionUnderlyingPrice { get; set; }
+        [JsonPropertyName("optionUnderlyingPrice")]
+        public decimal? OptionUnderlyingPrice { get; set; }
 
-		[JsonProperty("settledPrice")]
-		public decimal? SettledPrice { get; set; }
+        [JsonPropertyName("settledPrice")]
+        public decimal? SettledPrice { get; set; }
 
-		[JsonProperty("timestamp")]
-		public System.DateTimeOffset? Timestamp { get; set; }
-	}
+        [JsonPropertyName("timestamp")]
+        public System.DateTimeOffset? Timestamp { get; set; }
+    }
 }

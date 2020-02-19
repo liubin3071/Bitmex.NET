@@ -1,5 +1,4 @@
-﻿using Bitmex.NET.Example.Annotations;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Bitmex.NET.Example.Models
@@ -8,7 +7,7 @@ namespace Bitmex.NET.Example.Models
     {
         private string _direction;
         private decimal _size;
-        private decimal? _price;
+        private decimal _price;
         private long _id;
 
         public long Id
@@ -21,7 +20,7 @@ namespace Bitmex.NET.Example.Models
             }
         }
 
-        public decimal? Price
+        public decimal Price
         {
             get => _price;
             set
@@ -51,10 +50,8 @@ namespace Bitmex.NET.Example.Models
             }
         }
 
-
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

@@ -1,40 +1,38 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class NotificationDto
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public decimal? Id { get; set; }
 
-        [JsonProperty("date")]
+        [JsonPropertyName("date")]
         public DateTime? Date { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty("body")]
+        [JsonPropertyName("body")]
         public string Body { get; set; }
 
-        [JsonProperty("ttl")]
+        [JsonPropertyName("ttl")]
         public decimal? Ttl { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("closable")]
+        [JsonPropertyName("closable")]
         public bool? Closable { get; set; }
 
-        [JsonProperty("persist")]
+        [JsonPropertyName("persist")]
         public bool? Persist { get; set; }
 
-        [JsonProperty("waitForVisibility")]
+        [JsonPropertyName("waitForVisibility")]
         public bool? WaitForVisibility { get; set; }
 
-        [JsonProperty("sound")]
+        [JsonPropertyName("sound")]
         public string Sound { get; set; }
     }
 }

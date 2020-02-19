@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Web;
 
 namespace Bitmex.NET.Models
@@ -16,7 +17,7 @@ namespace Bitmex.NET.Models
             var baseQuery = base.ToQueryString();
             var filterValues = Filter == null
                 ? string.Empty
-                : $"filter={HttpUtility.UrlEncode(JsonConvert.SerializeObject(Filter))}";
+                : $"filter={HttpUtility.UrlEncode(BitmexJsonSerializer.Serialize(Filter))}";
             var currentQuery = $"{string.Join("&", filterValues)}";
 
             if (string.IsNullOrWhiteSpace(baseQuery))

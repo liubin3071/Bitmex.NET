@@ -1,38 +1,37 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class TransactionDto
     {
-        [JsonProperty("account", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("account")]
         public long? Account { get; set; }
 
-        [JsonProperty("currency", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("transactType", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("transactType")]
         public string TransactType { get; set; }
 
-        [JsonProperty("symbol", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("amount", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("amount")]
         public long? Amount { get; set; }
 
-        [JsonProperty("pendingDebit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("pendingDebit")]
         public long? PendingDebit { get; set; }
 
-        [JsonProperty("realisedPnl", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("realisedPnl")]
         public long? RealisedPnl { get; set; }
 
-        [JsonProperty("walletBalance", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("walletBalance")]
         public long? WalletBalance { get; set; }
 
-        [JsonProperty("unrealisedPnl", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("unrealisedPnl")]
         public long? UnrealisedPnl { get; set; }
 
-        [JsonProperty("marginBalance", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("marginBalance")]
         public long? MarginBalance { get; set; }
-
     }
 }

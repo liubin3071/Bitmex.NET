@@ -13,14 +13,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
     [TestCategory("REST")]
     public class BitmexApiServiceSchemaApiTests : IntegrationTestsClass<IBitmexApiService>
     {
-
         [TestMethod]
         public void should_return_all_schemas()
         {
             // arrange
             var @params = new SchemaGETRequestParams
             {
-
             };
             // act
             var result = Sut.Execute(BitmexApiUrls.Schema.GetSchema, @params).Result.Result;
@@ -49,7 +47,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             var chatChannelSchema = result.First();
             chatChannelSchema.Key.Should().Be("ChatChannel");
             chatChannelSchema.Value.Keys[0].Should().Be("id");
-            chatChannelSchema.Value.Types.Value<string>("id").Should().Be("integer");
+            chatChannelSchema.Value.Types["id"].GetString().Should().Be("integer");
         }
 
         [TestMethod]
@@ -70,7 +68,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             result.Ops.Length.Should().BeGreaterThan(0);
             result.SubscriptionSubjects.Keys.Count.Should().BeGreaterThan(0);
             result.SubscriptionSubjects["public"].Should().Contain("chat");
-
         }
     }
 }

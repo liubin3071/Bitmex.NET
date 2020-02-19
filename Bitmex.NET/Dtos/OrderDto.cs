@@ -1,96 +1,96 @@
-﻿using Newtonsoft.Json;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     [DebuggerDisplay("{Symbol} {Side} {OrderQty}")]
     public class OrderDto
     {
-        [JsonProperty("orderID")]
+        [JsonPropertyName("orderID")]
         public string OrderId { get; set; }
 
-        [JsonProperty("clOrdID")]
+        [JsonPropertyName("clOrdID")]
         public string ClOrdId { get; set; }
 
-        [JsonProperty("clOrdLinkID")]
+        [JsonPropertyName("clOrdLinkID")]
         public string ClOrdLinkId { get; set; }
 
-        [JsonProperty("account")]
+        [JsonPropertyName("account")]
         public long? Account { get; set; }
 
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("side")]
+        [JsonPropertyName("side")]
         public string Side { get; set; }
 
-        [JsonProperty("orderQty")]
+        [JsonPropertyName("orderQty")]
         public decimal? OrderQty { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public decimal? Price { get; set; }
 
-        [JsonProperty("displayQty")]
+        [JsonPropertyName("displayQty")]
         public decimal? DisplayQty { get; set; }
 
-        [JsonProperty("stopPx")]
+        [JsonPropertyName("stopPx")]
         public decimal? StopPx { get; set; }
 
-        [JsonProperty("pegOffsetValue")]
+        [JsonPropertyName("pegOffsetValue")]
         public decimal? PegOffsetValue { get; set; }
 
-        [JsonProperty("pegPriceType")]
+        [JsonPropertyName("pegPriceType")]
         public string PegPriceType { get; set; }
 
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("settlCurrency")]
+        [JsonPropertyName("settlCurrency")]
         public string SettlCurrency { get; set; }
 
-        [JsonProperty("ordType")]
+        [JsonPropertyName("ordType")]
         public string OrdType { get; set; }
 
-        [JsonProperty("timeInForce")]
+        [JsonPropertyName("timeInForce")]
         public string TimeInForce { get; set; }
 
-        [JsonProperty("execInst")]
+        [JsonPropertyName("execInst")]
         public string ExecInst { get; set; }
 
-        [JsonProperty("exDestination")]
+        [JsonPropertyName("exDestination")]
         public string ExDestination { get; set; }
 
-        [JsonProperty("ordStatus")]
+        [JsonPropertyName("ordStatus")]
         public string OrdStatus { get; set; }
 
-        [JsonProperty("triggered")]
+        [JsonPropertyName("triggered")]
         public string Triggered { get; set; }
 
-        [JsonProperty("workingIndicator")]
+        [JsonPropertyName("workingIndicator")]
         public bool WorkingIndicator { get; set; }
 
-        [JsonProperty("ordRejReason")]
+        [JsonPropertyName("ordRejReason")]
         public string OrdRejReason { get; set; }
 
-        [JsonProperty("leavesQty")]
+        [JsonPropertyName("leavesQty")]
         public decimal? LeavesQty { get; set; }
 
-        [JsonProperty("cumQty")]
+        [JsonPropertyName("cumQty")]
         public decimal CumQty { get; set; }
 
-        [JsonProperty("avgPx")]
+        [JsonPropertyName("avgPx")]
         public decimal? AvgPx { get; set; }
 
-        [JsonProperty("multiLegReportingType")]
+        [JsonPropertyName("multiLegReportingType")]
         public string MultiLegReportingType { get; set; }
 
-        [JsonProperty("text")]
+        [JsonPropertyName("text")]
         public string Text { get; set; }
 
-        [JsonProperty("transactTime")]
+        [JsonPropertyName("transactTime")]
         public System.DateTimeOffset TransactTime { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public System.DateTimeOffset Timestamp { get; set; }
     }
 }

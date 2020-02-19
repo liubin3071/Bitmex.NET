@@ -1,32 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class SchemaDto
     {
-        [JsonProperty("keys")]
+        [JsonPropertyName("keys")]
         public string[] Keys { get; set; }
-        [JsonProperty("types")]
-        public JObject Types { get; set; }
 
+        [JsonPropertyName("types")]
+        public Dictionary<string, JsonElement> Types { get; set; }
     }
 
     public class SchemaWebSocketHelpDto
     {
-
-        [JsonProperty("info")]
+        [JsonPropertyName("info")]
         public string Info { get; set; }
-        [JsonProperty("usage")]
+
+        [JsonPropertyName("usage")]
         public string Usage { get; set; }
-        [JsonProperty("ops")]
+
+        [JsonPropertyName("ops")]
         public string[] Ops { get; set; }
-        [JsonProperty("subscribe")]
+
+        [JsonPropertyName("subscribe")]
         public string Subscribe { get; set; }
-        [JsonProperty("subscriptionSubjects")]
+
+        [JsonPropertyName("subscriptionSubjects")]
         public Dictionary<string, string[]> SubscriptionSubjects { get; set; }
     }
 }

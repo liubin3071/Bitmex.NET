@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Authors>Vladimir Semashkin</Authors>
     <PackageLicenseUrl>https://github.com/semashkinvg/Bitmex.NET/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/semashkinvg/Bitmex.NET</PackageProjectUrl>
@@ -16,13 +16,27 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
+    --><!--<DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'netstandard2.0' ">NETSTANDARD2_0</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'netstandard2.1' ">NETSTANDARD2_1</DefineConstants>--><!--
+
+  </PropertyGroup>-->
+ 
+  <ItemGroup>
+    <Compile Remove="Models\Socket\Requests\**" />
+    <EmbeddedResource Remove="Models\Socket\Requests\**" />
+    <None Remove="Models\Socket\Requests\**" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibLog" Version="5.0.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="LibLog" Version="5.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Text.Json" Version="4.7.1" />
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
   </ItemGroup>
 

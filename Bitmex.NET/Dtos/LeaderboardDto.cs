@@ -1,19 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class LeaderboardDto
     {
-        [JsonProperty("profit")]
+        [JsonPropertyName("profit")]
         public double? Profit { get; set; }
 
-        [JsonProperty("isRealName")]
+        [JsonPropertyName("isRealName")]
         public bool? IsRealName { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 }

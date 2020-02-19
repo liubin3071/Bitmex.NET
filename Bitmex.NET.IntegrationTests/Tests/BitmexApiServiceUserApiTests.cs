@@ -16,7 +16,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new EmptyParameters();
             {
-
             };
 
             // act
@@ -33,7 +32,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new EmptyParameters();
             {
-
             };
 
             // act
@@ -50,7 +48,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new EmptyParameters();
             {
-
             };
 
             // act
@@ -67,7 +64,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserMarginGETRequestParams();
             {
-
             };
 
             // act
@@ -85,7 +81,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserCheckReferralCodeGETRequestParams();
             {
-
             };
 
             // act
@@ -101,7 +96,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserDepositAddressGETRequestParams();
             {
-
             };
 
             // act
@@ -117,7 +111,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserWalletGETRequestParams();
             {
-
             };
 
             // act
@@ -135,7 +128,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserWalletHistoryGETRequestParams();
             {
-
             };
 
             // act
@@ -152,7 +144,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserWalletSummaryGETRequestParams();
             {
-
             };
 
             // act
@@ -169,7 +160,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new UserMinWithdrawalFeeGETRequestParams();
             {
-
             };
 
             // act

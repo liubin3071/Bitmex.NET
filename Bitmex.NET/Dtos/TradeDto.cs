@@ -1,37 +1,37 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class TradeDto
     {
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public System.DateTimeOffset Timestamp { get; set; }
 
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("side")]
+        [JsonPropertyName("side")]
         public string Side { get; set; }
 
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public decimal Size { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public decimal Price { get; set; }
 
-        [JsonProperty("tickDirection")]
+        [JsonPropertyName("tickDirection")]
         public string TickDirection { get; set; }
 
-        [JsonProperty("trdMatchID")]
+        [JsonPropertyName("trdMatchID")]
         public string TrdMatchId { get; set; }
 
-        [JsonProperty("grossValue")]
+        [JsonPropertyName("grossValue")]
         public decimal? GrossValue { get; set; }
 
-        [JsonProperty("homeNotional")]
+        [JsonPropertyName("homeNotional")]
         public decimal HomeNotional { get; set; }
 
-        [JsonProperty("foreignNotional")]
+        [JsonPropertyName("foreignNotional")]
         public decimal ForeignNotional { get; set; }
     }
 }

@@ -2,12 +2,12 @@
 using Bitmex.NET.Dtos;
 using Bitmex.NET.Logging;
 using Bitmex.NET.Models;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Bitmex.NET
@@ -49,7 +49,7 @@ namespace Bitmex.NET
             var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(action) + (string.IsNullOrWhiteSpace(query) ? string.Empty : "?" + query));
 
             CorrectUri(request);
-            
+
             return SendAndGetResponseAsync(request);
         }
 
@@ -59,14 +59,13 @@ namespace Bitmex.NET
             var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl(action) + (string.IsNullOrWhiteSpace(query) ? string.Empty : "?" + query));
 
             CorrectUri(request);
-            
+
             return SendAndGetResponseAsync(request);
         }
 
         public Task<BitmexApiResult<string>> Post(string action, IJsonQueryParams parameters) => SendAndGetResponseAsync(HttpMethod.Post, action, parameters);
 
         public Task<BitmexApiResult<string>> Put(string action, IJsonQueryParams parameters) => SendAndGetResponseAsync(HttpMethod.Put, action, parameters);
-
 
         private Task<BitmexApiResult<string>> SendAndGetResponseAsync(HttpMethod method, string action, IJsonQueryParams parameters)
         {
@@ -77,7 +76,7 @@ namespace Bitmex.NET
             {
                 Content = new StringContent(content, Encoding.UTF8, "application/json")
             };
-            
+
             CorrectUri(request);
 
             return SendAndGetResponseAsync(request, content);
@@ -109,19 +108,19 @@ namespace Bitmex.NET
             if (!response.IsSuccessStatusCode)
             {
                 int? retryAfterSeconds = null;
-                if ((int) response.StatusCode == 429 && response.Headers.RetryAfter?.Delta != null)
+                if ((int)response.StatusCode == 429 && response.Headers.RetryAfter?.Delta != null)
                 {
                     retryAfterSeconds = (int)response.Headers.RetryAfter.Delta.Value.TotalSeconds;
                 }
 
                 try
                 {
-                    throw new BitmexApiException((int)response.StatusCode, JsonConvert.DeserializeObject<BitmexApiError>(responseString))
+                    throw new BitmexApiException((int)response.StatusCode, BitmexJsonSerializer.Deserialize<BitmexApiError>(responseString))
                     {
                         RetryAfterSeconds = retryAfterSeconds,
                     };
                 }
-                catch (JsonReaderException)
+                catch (JsonException)
                 {
                     throw new BitmexApiException((int)response.StatusCode, responseString)
                     {
@@ -141,7 +140,7 @@ namespace Bitmex.NET
         }
 
         private static string GetUrl(string action) => "/api/v1/" + action;
-        
+
         private static void CorrectUri(HttpRequestMessage request)
         {
             request.RequestUri = new Uri(request.RequestUri.OriginalString, UriKind.Relative);

@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class MinWithdrawalFeeDto
     {
-        [JsonProperty("currency", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("fee", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("fee")]
         public long? Fee { get; set; }
 
-        [JsonProperty("minFee", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("minFee")]
         public long? MinFee { get; set; }
     }
 }

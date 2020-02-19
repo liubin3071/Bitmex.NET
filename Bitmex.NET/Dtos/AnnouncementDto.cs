@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,19 +7,19 @@ namespace Bitmex.NET.Dtos
 {
     public class AnnouncementDto
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public decimal? Id { get; set; }
 
-        [JsonProperty("link")]
+        [JsonPropertyName("link")]
         public string Link { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty("content")]
+        [JsonPropertyName("content")]
         public string Content { get; set; }
 
-        [JsonProperty("date")]
+        [JsonPropertyName("date")]
         public DateTime? Date { get; set; }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Bitmex.NET.Dtos.Socket;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Linq;
+using System.Text.Json;
 
 namespace Bitmex.NET.Models.Socket
 {
@@ -18,7 +19,7 @@ namespace Bitmex.NET.Models.Socket
             SubscriptionName = subscriptionName;
         }
 
-        public abstract void Execute(JToken data, BitmexActions action);
+        public abstract void Execute(JsonElement data, BitmexActions action);
     }
 
     public class BitmexApiSubscriptionInfo<TResult> : BitmexApiSubscriptionInfo
@@ -42,10 +43,18 @@ namespace Bitmex.NET.Models.Socket
             return new BitmexApiSubscriptionInfo<TResult>(subscriptionType, act);
         }
 
-        public override void Execute(JToken data, BitmexActions action)
+        public override void Execute(JsonElement data, BitmexActions action)
         {
-            Act?.Invoke(new BitmexSocketDataMessage<TResult>(action, data.ToObject<TResult>()));
-        }
+#if  NETSTANDARD2_0
+            var dataObj = JsonSerializer.Deserialize<TResult>(data.GetRawText());
+#elif NETSTANDARD2_1
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(bufferWriter))
+                data.WriteTo(writer);
+            var dataObj = BitmexJsonSerializer.Deserialize<TResult>(bufferWriter.WrittenSpan);
+#endif
 
+            Act?.Invoke(new BitmexSocketDataMessage<TResult>(action, dataObj));
+        }
     }
 }

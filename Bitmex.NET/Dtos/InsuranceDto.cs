@@ -1,19 +1,17 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class InsuranceDto
     {
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public DateTime? Timestamp { get; set; }
 
-        [JsonProperty("walletBalance")]
+        [JsonPropertyName("walletBalance")]
         public decimal? WalletBalance { get; set; }
     }
 }

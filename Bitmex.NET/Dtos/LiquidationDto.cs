@@ -1,22 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class LiquidationDto
     {
-        [JsonProperty("orderID")]
+        [JsonPropertyName("orderID")]
         public string OrderId { get; set; }
 
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("side")]
+        [JsonPropertyName("side")]
         public string Side { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public decimal? Price { get; set; }
 
-        [JsonProperty("leavesQty")]
+        [JsonPropertyName("leavesQty")]
         public decimal? LeavesQty { get; set; }
     }
 }

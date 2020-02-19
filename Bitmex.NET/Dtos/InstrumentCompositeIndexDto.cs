@@ -1,28 +1,28 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
-	public class InstrumentCompositeIndexDto
-	{
-		[JsonProperty("timestamp")]
-		public System.DateTimeOffset? Timestamp { get; set; }
+    public class InstrumentCompositeIndexDto
+    {
+        [JsonPropertyName("timestamp")]
+        public System.DateTimeOffset? Timestamp { get; set; }
 
-		[JsonProperty("symbol")]
-		public string Symbol { get; set; }
+        [JsonPropertyName("symbol")]
+        public string Symbol { get; set; }
 
-		[JsonProperty("indexSymbol")]
-		public string IndexSymbol { get; set; }
+        [JsonPropertyName("indexSymbol")]
+        public string IndexSymbol { get; set; }
 
-		[JsonProperty("reference")]
-		public string Reference { get; set; }
+        [JsonPropertyName("reference")]
+        public string Reference { get; set; }
 
-		[JsonProperty("lastPrice")]
-		public decimal? LastPrice { get; set; }
+        [JsonPropertyName("lastPrice")]
+        public decimal? LastPrice { get; set; }
 
-		[JsonProperty("weight")]
-		public decimal? Weight { get; set; }
+        [JsonPropertyName("weight")]
+        public decimal? Weight { get; set; }
 
-		[JsonProperty("logged")]
-		public System.DateTimeOffset? Logged { get; set; }
-	}
+        [JsonPropertyName("logged")]
+        public System.DateTimeOffset? Logged { get; set; }
+    }
 }

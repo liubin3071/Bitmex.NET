@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 
 namespace Bitmex.NET.Dtos.Socket
 {
     public class OrderBook10Dto
     {
-        [JsonProperty("symbol", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("bids", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("bids")]
         public decimal[][] Bids { get; set; }
 
-        [JsonProperty("asks", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("asks")]
         public decimal[][] Asks { get; set; }
 
-        [JsonProperty("timestamp", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
     }
 }

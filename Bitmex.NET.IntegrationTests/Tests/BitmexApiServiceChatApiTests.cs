@@ -13,14 +13,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
     [TestCategory("REST")]
     public class BitmexApiServiceChatApiTests : IntegrationTestsClass<IBitmexApiService>
     {
-
         [TestMethod]
         public void should_return_count_connected_users_and_bots()
         {
             // arrange
             var @params = new EmptyParameters();
             {
-              
             };
             // act
             var result = Sut.Execute(BitmexApiUrls.Chat.GetChatConnected, @params).Result.Result;
@@ -37,7 +35,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new EmptyParameters()
             {
-
             };
             // act
             var result = Sut.Execute(BitmexApiUrls.Chat.GetChatChannels, @params).Result.Result;
@@ -58,7 +55,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 Message = "Long Live Bitmex.NET",
                 //English channel
                 ChannelID = 1,
-
             };
             // act
             var result = Sut.Execute(BitmexApiUrls.Chat.PostChat, @params).Result.Result;
@@ -80,7 +76,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             // arrange
             var @params = new ChatGETRequestParams
             {
-               
                 Count = 35,
                 Start = 5000,
                 Reverse = false,
@@ -103,6 +98,5 @@ namespace Bitmex.NET.IntegrationTests.Tests
             firstChatMessage.Html.Should().NotBeNullOrEmpty();
             firstChatMessage.Message.Should().NotBeNullOrEmpty();
         }
-
     }
 }

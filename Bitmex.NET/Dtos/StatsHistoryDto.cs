@@ -1,23 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 
 namespace Bitmex.NET.Dtos
 {
     public class StatsHistoryDto
     {
-        [JsonProperty("date")]
+        [JsonPropertyName("date")]
         public DateTime? Date { get; set; }
 
-        [JsonProperty("rootSymbol")]
+        [JsonPropertyName("rootSymbol")]
         public string RootSymbol { get; set; }
 
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("volume")]
+        [JsonPropertyName("volume")]
         public decimal? Volume { get; set; }
 
-        [JsonProperty("turnover")]
+        [JsonPropertyName("turnover")]
         public decimal? Turnover { get; set; }
     }
 }

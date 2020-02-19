@@ -1,43 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class ChatDto
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long? Id { get; set; }
-        [JsonProperty("date")]
+
+        [JsonPropertyName("date")]
         public DateTime? Date { get; set; } = null;
-        [JsonProperty("user")]
+
+        [JsonPropertyName("user")]
         public string User { get; set; }
-        [JsonProperty("message")]
+
+        [JsonPropertyName("message")]
         public string Message { get; set; }
-        [JsonProperty("html")]
+
+        [JsonPropertyName("html")]
         public string Html { get; set; }
-        [JsonProperty("fromBot")]
+
+        [JsonPropertyName("fromBot")]
         public bool? FromBot { get; set; }
-        [JsonProperty("channelID")]
+
+        [JsonPropertyName("channelID")]
         public long? ChannelId { get; set; }
-    
     }
 
     public class ChatConnectedDto
     {
-        [JsonProperty("users")]
+        [JsonPropertyName("users")]
         public int? Users { get; set; }
-        [JsonProperty("bots")]
+
+        [JsonPropertyName("bots")]
         public int? Bots { get; set; }
     }
 
-
     public class ChatChannelDto
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long? ChannelId { get; set; }
-        [JsonProperty("name")]
+
+        [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 }

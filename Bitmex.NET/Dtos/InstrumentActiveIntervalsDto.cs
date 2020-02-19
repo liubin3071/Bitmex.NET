@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
-	public class InstrumentActiveIntervalsDto
-	{
-		[JsonProperty("intervals")]
-		public string[] Intervals { get; set; }
+    public class InstrumentActiveIntervalsDto
+    {
+        [JsonPropertyName("intervals")]
+        public string[] Intervals { get; set; }
 
-		[JsonProperty("symbols")]
-		public string[] Symbols { get; set; }
-	}
+        [JsonPropertyName("symbols")]
+        public string[] Symbols { get; set; }
+    }
 }

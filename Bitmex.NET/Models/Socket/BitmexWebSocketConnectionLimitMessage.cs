@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Models.Socket
 {
     public class BitmexWebSocketConnectionLimitMessage
     {
-        [JsonProperty("remaining")]
+        [JsonPropertyName("remaining")]
         public int Remaining { get; set; }
     }
 }

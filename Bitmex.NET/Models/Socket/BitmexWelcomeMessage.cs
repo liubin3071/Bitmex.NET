@@ -1,23 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 
 namespace Bitmex.NET.Models.Socket
 {
     public class BitmexWelcomeMessage
     {
-        [JsonProperty("info")]
+        [JsonPropertyName("info")]
         public string Info { get; set; }
 
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public DateTime Timestamp { get; set; }
 
-        [JsonProperty("docs")]
+        [JsonPropertyName("docs")]
         public string Docs { get; set; }
 
-        [JsonProperty("limit")]
+        [JsonPropertyName("limit")]
         public BitmexWebSocketConnectionLimitMessage Limit { get; set; }
     }
 }

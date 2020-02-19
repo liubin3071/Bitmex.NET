@@ -25,7 +25,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
 
             Sut.Execute(BitmexApiUrls.Order.PostOrderCancelAllAfter, paramCloseAfter).Wait();
             _xbtAvgPrice = Sut.Execute(BitmexApiUrls.OrderBook.GetOrderBookL2, new OrderBookL2GETRequestParams() { Symbol = "XBTUSD", Depth = 1 }).Result.Result.First()
-                .Price;
+                .Price.Value;
         }
 
         [TestMethod]
@@ -459,7 +459,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             Sut.Execute(BitmexApiUrls.Order.PostOrderCancelAllAfter, paramCloseAfter).Wait();
             Thread.Sleep(1500);
             var resultCloseAfter = Sut.Execute(BitmexApiUrls.Order.GetOrder, new OrderGETRequestParams { Symbol = "XBTUSD" }).Result.Result;
-
 
             // assert
             resultCloseAfter.Should().NotBeNull();

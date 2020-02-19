@@ -1,5 +1,4 @@
-﻿
-using Bitmex.NET.Dtos;
+﻿using Bitmex.NET.Dtos;
 using Bitmex.NET.Dtos.Socket;
 using Bitmex.NET.Models;
 using Bitmex.NET.Models.Socket;
@@ -33,8 +32,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
 
             _bitmexApiService.Execute(BitmexApiUrls.Order.PostOrderCancelAllAfter, paramCloseAfter).Wait();
             _xbtAvgPrice = _bitmexApiService.Execute(BitmexApiUrls.OrderBook.GetOrderBookL2, new OrderBookL2GETRequestParams() { Symbol = "XBTUSD", Depth = 1 }).Result.Result.First()
-                .Price;
-
+                .Price.Value;
         }
 
         [TestMethod]

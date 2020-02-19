@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class SettlementDto
     {
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public DateTime? TimeStamp { get; set; }
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
-        [JsonProperty("settlementType")]
+        [JsonPropertyName("settlementType")]
         public string SettlementType { get; set; }
-        [JsonProperty("settledPrice")]
+        [JsonPropertyName("settledPrice")]
         public decimal? SettledPrice { get; set; }
-        [JsonProperty("optionStrikePrice")]
+        [JsonPropertyName("optionStrikePrice")]
         public decimal? OptionStrikePrice { get; set; }
-        [JsonProperty("optionUnderlyingPrice")]
+        [JsonPropertyName("optionUnderlyingPrice")]
         public decimal? OptionUnderlyingPrice { get; set; }
-        [JsonProperty("bankrupt")]
+        [JsonPropertyName("bankrupt")]
         public decimal? Bankrupt { get; set; }
-        [JsonProperty("taxBase")]
+        [JsonPropertyName("taxBase")]
         public decimal? TaxBase { get; set; }
-        [JsonProperty("taxRate")]
+        [JsonPropertyName("taxRate")]
         public decimal? TaxRate { get; set; }
     }
 }

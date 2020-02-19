@@ -1,10 +1,11 @@
 ﻿using Bitmex.NET.Models;
 using Bitmex.NET.Models.Socket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System;
-using System.Configuration;
 using Unity;
+using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
 namespace Bitmex.NET.IntegrationTests.Tests
 {
@@ -23,9 +24,16 @@ namespace Bitmex.NET.IntegrationTests.Tests
             container.RegisterInstance<IBitmexAuthorization>(_bitmexAuthorization);
 
             Sut = container.Resolve<IBitmexApiSocketService>();
-            _bitmexAuthorization.BitmexEnvironment.Returns(BitmexEnvironment.Test);
-            _bitmexAuthorization.Key.Returns(ConfigurationManager.AppSettings["Key"]);
-            _bitmexAuthorization.Secret.Returns(ConfigurationManager.AppSettings["Secret"]);
+
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.test.json")
+                .Build();
+            var key = config.GetValue<string>("Key");
+            var secret = config.GetValue<string>("Secret");
+            var env = config.GetValue<string>("Environment");
+            _bitmexAuthorization.BitmexEnvironment.Returns(Enum.Parse(typeof(BitmexEnvironment), env));
+            _bitmexAuthorization.Key.Returns(key);
+            _bitmexAuthorization.Secret.Returns(secret);
         }
 
         [TestMethod]
@@ -38,7 +46,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
 
                 // act
                 Sut.Connect();
-
             }
             catch (BitmexWebSocketLimitReachedException)
             {

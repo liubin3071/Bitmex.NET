@@ -1,46 +1,46 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class TradeBucketedDto
     {
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public System.DateTimeOffset Timestamp { get; set; }
 
-        [JsonProperty("symbol")]
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
 
-        [JsonProperty("open")]
+        [JsonPropertyName("open")]
         public decimal? Open { get; set; }
 
-        [JsonProperty("high")]
+        [JsonPropertyName("high")]
         public decimal? High { get; set; }
 
-        [JsonProperty("low")]
+        [JsonPropertyName("low")]
         public decimal? Low { get; set; }
 
-        [JsonProperty("close")]
+        [JsonPropertyName("close")]
         public decimal? Close { get; set; }
 
-		[JsonProperty("trades")]
-		public decimal Trades { get; set; }
+        [JsonPropertyName("trades")]
+        public decimal Trades { get; set; }
 
-        [JsonProperty("volume")]
+        [JsonPropertyName("volume")]
         public decimal? Volume { get; set; }
 
-        [JsonProperty("vwap")]
+        [JsonPropertyName("vwap")]
         public decimal? Vwap { get; set; }
 
-        [JsonProperty("lastSize")]
+        [JsonPropertyName("lastSize")]
         public decimal? LastSize { get; set; }
 
-		[JsonProperty("turnover")]
-		public decimal Turnover { get; set; }
+        [JsonPropertyName("turnover")]
+        public decimal Turnover { get; set; }
 
-		[JsonProperty("homeNotional")]
-		public decimal HomeNotional { get; set; }
+        [JsonPropertyName("homeNotional")]
+        public decimal HomeNotional { get; set; }
 
-		[JsonProperty("foreignNotional")]
-		public decimal ForeignNotional { get; set; }
-	}
+        [JsonPropertyName("foreignNotional")]
+        public decimal ForeignNotional { get; set; }
+    }
 }

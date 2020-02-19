@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos.Socket
 {
-	public class BitmexSocketOperationResultDto
-	{
-		[JsonProperty("error")]
-		public string Error { get; set; }
+    public class BitmexSocketOperationResultDto
+    {
+        [JsonPropertyName("error")]
+        public string Error { get; set; }
 
-		[JsonProperty("status")]
-		public string Status { get; set; }
+        [JsonPropertyName("status")]
+        public int Status { get; set; }
 
-		[JsonProperty("success")]
-		public bool Success { get; set; }
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
 
-		[JsonProperty("request")]
-		public InitialRequstInfoDto Request { get; set; }
-	}
+        [JsonPropertyName("request")]
+        public InitialRequstInfoDto Request { get; set; }
+    }
 }

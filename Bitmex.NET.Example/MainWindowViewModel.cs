@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Bitmex.NET.Dtos;
 using Bitmex.NET.Dtos.Socket;
-using Bitmex.NET.Example.Annotations;
 using Bitmex.NET.Example.Models;
 using Bitmex.NET.Models;
 using Prism.Commands;
@@ -15,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using Bitmex.NET.Example.Automapping;
 
 namespace Bitmex.NET.Example
 {
@@ -33,7 +33,7 @@ namespace Bitmex.NET.Example
 
         public ObservableCollection<InstrumentModel> Instruments { get; }
         public ObservableCollection<OrderUpdateModel> OrderUpdates { get; }
-        public ObservableCollection<OrderBookModel> OrderBookL2 { get; }
+        public ObservableCollection<OrderBookModel> OrderBookL2 { get; private set; }
         public List<OrderBookModel> OrderBook10 { get; private set; }
 
         public string Secret
@@ -91,7 +91,15 @@ namespace Bitmex.NET.Example
 
         public MainWindowViewModel()
         {
-            _bitmexAuthorization = new BitmexAuthorization { BitmexEnvironment = BitmexEnvironment.Test };
+            _key = "TGILaGzUbldGjQcsDkDolY8M";
+            _secret = "hF32jD-OsGPxcTqY6sPxwvNEVpqJMgirxOTnME5t7J6sjqH4";
+
+            _bitmexAuthorization = new BitmexAuthorization
+            {
+                BitmexEnvironment = BitmexEnvironment.Test,
+                Key = _key,
+                Secret = _secret
+            };
             _bitmexApiSocketService = BitmexApiSocketService.CreateDefaultApi(_bitmexAuthorization);
             BuyCmd = new DelegateCommand(Buy);
             SellCmd = new DelegateCommand(Sell);
@@ -133,11 +141,11 @@ namespace Bitmex.NET.Example
                                 var existing = Instruments.FirstOrDefault(a => a.Symbol == instrumentDto.Symbol);
                                 if (existing != null && message.Action == BitmexActions.Update)
                                 {
-                                    Mapper.Map<InstrumentDto, InstrumentModel>(instrumentDto, existing);
+                                    BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto, existing);
                                 }
                                 else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
                                 {
-                                    Instruments.Add(Mapper.Map<InstrumentDto, InstrumentModel>(instrumentDto));
+                                    Instruments.Add(BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto));
                                 }
                             }
                         }
@@ -153,11 +161,11 @@ namespace Bitmex.NET.Example
                                 var existing = OrderUpdates.FirstOrDefault(a => a.OrderId == order.OrderId);
                                 if (existing != null && message.Action == BitmexActions.Update)
                                 {
-                                    Mapper.Map<OrderDto, OrderUpdateModel>(order, existing);
+                                    BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order, existing);
                                 }
                                 else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
                                 {
-                                    OrderUpdates.Add(Mapper.Map<OrderDto, OrderUpdateModel>(order));
+                                    OrderUpdates.Add(BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order));
                                 }
                             }
 
@@ -199,9 +207,13 @@ namespace Bitmex.NET.Example
 
                             lock (_syncObjOrderBookL2)
                             {
-                                if (message.Action == BitmexActions.Insert || message.Action == BitmexActions.Partial)
+                                if (message.Action == BitmexActions.Partial)
                                 {
-                                    OrderBookL2.Add(Mapper.Map<OrderBookDto, OrderBookModel>(dto));
+                                    OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
+                                }
+                                if (message.Action == BitmexActions.Insert)
+                                {
+                                    OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
                                 }
                                 if (message.Action == BitmexActions.Delete)
                                 {
@@ -217,25 +229,22 @@ namespace Bitmex.NET.Example
                                     var existing = OrderBookL2.FirstOrDefault(a => a.Id == dto.Id);
                                     if (existing == null)
                                     {
-                                        OrderBookL2.Add(Mapper.Map<OrderBookDto, OrderBookModel>(dto));
+                                        OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
                                     }
                                     else
                                     {
-                                        Mapper.Map<OrderBookDto, OrderBookModel>(dto, existing);
+                                        BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto, existing);
                                     }
-
-
                                 }
+
+                                //OrderBookL2 = OrderBookL2.OrderBy(c => c.Id).ToList();
                             }
-
-                            OnPropertyChanged(nameof(OrderBook10));
-
+                            OnPropertyChanged(nameof(OrderBookL2));
                         }
                     }));
             }
         }
 
-        [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

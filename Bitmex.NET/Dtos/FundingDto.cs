@@ -1,21 +1,23 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
     public class FundingDto
     {
-        [JsonProperty("timestamp")]
-        public DateTime? Timestamp { get; set; } = null;      
-        [JsonProperty("symbol")]
+        [JsonPropertyName("timestamp")]
+        public DateTime? Timestamp { get; set; } = null;
+
+        [JsonPropertyName("symbol")]
         public string Symbol { get; set; }
-        [JsonProperty("fundingInterval")]
-        public DateTime? FundingInterval { get; set; } = null;    
-        [JsonProperty("fundingRate")]
+
+        [JsonPropertyName("fundingInterval")]
+        public DateTime? FundingInterval { get; set; } = null;
+
+        [JsonPropertyName("fundingRate")]
         public double? FundingRate { get; set; }
-        [JsonProperty("fundingRateDaily")]
+
+        [JsonPropertyName("fundingRateDaily")]
         public double? FundingRateDaily { get; set; }
     }
 }

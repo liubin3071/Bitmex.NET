@@ -1,6 +1,7 @@
 ﻿using Bitmex.NET.Models;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Bitmex.NET
@@ -27,28 +28,28 @@ namespace Bitmex.NET
                     {
                         var getQueryParams = @params as IQueryStringParams;
                         var serializedResult = await _bitmexApiProxy.Get(apiAction.Action, getQueryParams);
-                        var deserializedResult = JsonConvert.DeserializeObject<TResult>(serializedResult.Result);
+                        var deserializedResult = BitmexJsonSerializer.Deserialize<TResult>(serializedResult.Result);
                         return serializedResult.ToResultType<TResult>(deserializedResult);
                     }
                 case HttpMethods.POST:
                     {
                         var postQueryParams = @params as IJsonQueryParams;
                         var serializedResult = await _bitmexApiProxy.Post(apiAction.Action, postQueryParams);
-                        var deserializedResult = JsonConvert.DeserializeObject<TResult>(serializedResult.Result);
+                        var deserializedResult = BitmexJsonSerializer.Deserialize<TResult>(serializedResult.Result);
                         return serializedResult.ToResultType<TResult>(deserializedResult);
                     }
                 case HttpMethods.PUT:
                     {
                         var putQueryParams = @params as IJsonQueryParams;
                         var serializedResult = await _bitmexApiProxy.Put(apiAction.Action, putQueryParams);
-                        var deserializedResult = JsonConvert.DeserializeObject<TResult>(serializedResult.Result);
+                        var deserializedResult = BitmexJsonSerializer.Deserialize<TResult>(serializedResult.Result);
                         return serializedResult.ToResultType<TResult>(deserializedResult);
                     }
                 case HttpMethods.DELETE:
                     {
                         var deleteQueryParams = @params as IQueryStringParams;
                         var serializedResult = await _bitmexApiProxy.Delete(apiAction.Action, deleteQueryParams);
-                        var deserializedResult = JsonConvert.DeserializeObject<TResult>(serializedResult.Result);
+                        var deserializedResult = BitmexJsonSerializer.Deserialize<TResult>(serializedResult.Result);
                         return serializedResult.ToResultType<TResult>(deserializedResult);
                     }
                 default:

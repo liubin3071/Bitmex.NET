@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 
 namespace Bitmex.NET.Dtos
 {
     public class StatsDto
     {
-        [JsonProperty("rootSymbol")]
+        [JsonPropertyName("rootSymbol")]
         public string RootSymbol { get; set; }
 
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public string Currency { get; set; }
 
-        [JsonProperty("volume24h")]
+        [JsonPropertyName("volume24h")]
         public decimal? Volume24H { get; set; }
 
-        [JsonProperty("turnover24h")]
+        [JsonPropertyName("turnover24h")]
         public decimal? Turnover24H { get; set; }
 
-        [JsonProperty("openInterest")]
+        [JsonPropertyName("openInterest")]
         public decimal? OpenInterest { get; set; }
 
-        [JsonProperty("openValue")]
+        [JsonPropertyName("openValue")]
         public decimal? OpenValue { get; set; }
     }
 }

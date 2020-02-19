@@ -1,6 +1,7 @@
 ﻿using Bitmex.NET.Dtos.Socket;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 using System;
+using System.Text.Json;
 
 namespace Bitmex.NET.Models.Socket.Events
 {
@@ -8,9 +9,9 @@ namespace Bitmex.NET.Models.Socket.Events
     {
         public string TableName { get; }
         public BitmexActions Action { get; }
-        public JToken Data { get; }
+        public JsonElement Data { get; }
 
-        public DataEventArgs(string tableName, JToken data, BitmexActions action)
+        public DataEventArgs(string tableName, JsonElement data, BitmexActions action)
         {
             TableName = tableName;
             Data = data;

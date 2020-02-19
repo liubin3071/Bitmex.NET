@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Bitmex.NET.Dtos
 {
-	public partial class BitmexApiError
-	{
-		[JsonProperty("error")]
-		public Error Error { get; set; }
-	}
+    public partial class BitmexApiError
+    {
+        [JsonPropertyName("error")]
+        public Error Error { get; set; }
+    }
 
-	public partial class Error
-	{
-		[JsonProperty("message")]
-		public string Message { get; set; }
+    public partial class Error
+    {
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
 
-		[JsonProperty("name")]
-		public string Name { get; set; }
-	}
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
 }

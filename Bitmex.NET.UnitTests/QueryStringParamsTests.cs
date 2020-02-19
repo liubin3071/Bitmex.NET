@@ -88,11 +88,13 @@ namespace Bitmex.NET.UnitTests
             [DisplayName("val")]
             public string Value { get; set; }
         }
+
         private class SomeQueryBoolParams : QueryStringParams
         {
             [DisplayName("val")]
             public bool Value { get; set; }
         }
+
         private class SomeQueryBoolNullableParams : QueryStringParams
         {
             [DisplayName("val")]
@@ -103,6 +105,7 @@ namespace Bitmex.NET.UnitTests
         {
             [DisplayName("val")]
             public string Value { get; set; }
+
             [DisplayName("val1")]
             public string Value1 { get; set; }
         }
