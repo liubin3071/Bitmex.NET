@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Bitmex.NET.Models;
+using Bitmex.NET.Models.Socket;
+using CoinGroup.Market.Bitmex.Models.Websockets.Requests;
 using Unity;
 
 namespace Bitmex.NET.IntegrationTests.Tests
@@ -23,11 +25,16 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var connected = Sut.Connect();
                 IEnumerable<ChatDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateChatSubscription(a =>
+                Sut.ChatResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
-                    dataReceived.Set();
-                });
+                    if (args.Response.Data.Any())
+                    {
+                        dtos = args.Response.Data;
+                        dataReceived.Set();
+                    }
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.chat);
 
                 Subscription = subscription;
                 // act
@@ -46,7 +53,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -58,7 +65,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 Message = "Long Live Bitmex.NET",
                 //English channel
                 ChannelID = 1,
-
             };
             var result = bitmexRestApi.Execute(BitmexApiUrls.Chat.PostChat, @params).Result.Result;
         }

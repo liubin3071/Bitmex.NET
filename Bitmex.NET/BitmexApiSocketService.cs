@@ -4,13 +4,23 @@ using Bitmex.NET.Models.Socket;
 using Bitmex.NET.Models.Socket.Events;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Bitmex.NET.Dtos;
+using Bitmex.NET.Dtos.Socket;
+using Bitmex.NET.Models.Socket.Responses;
+using Bitmex.NET.Models.Socket.Responses.OperationResponses;
+using Bitmex.NET.Models.Socket.Responses.RawResponses;
+using Bitmex.NET.Models.Socket.Responses.TableResponses;
 
 namespace Bitmex.NET
 {
     public interface IBitmexApiSocketService
     {
+        //IBitmexApiSocketProxy BitmexApiSocketProxy { get; }
+
         /// <summary>
         /// Sends provided API key and a message encrypted using provided Secret to the server and waits for a response.
         /// </summary>
@@ -24,14 +34,86 @@ namespace Bitmex.NET
         /// </summary>
         /// <exception cref="BitmexSocketSubscriptionException">Throws when either timeout is reached or server retured an error.</exception>
         /// <param name="subscription">Specific subscription details. Check out <see cref="BitmetSocketSubscriptions"/>.</param>
-        void Subscribe(BitmexApiSubscriptionInfo subscription);
+        void Subscribe(SubscriptionRequest subscription);
 
-        void Unsubscribe(BitmexApiSubscriptionInfo subscription);
+        void Unsubscribe(UnsubscriptionRequest subscription);
 
-        Task UnsubscribeAsync(BitmexApiSubscriptionInfo subscription);
+        Task UnsubscribeAsync(UnsubscriptionRequest subscription);
+
+        event EventHandler<ResponseEventArgs<WelcomeInfoResponse>> WelcomeInfoResponseReceived;
+
+        event EventHandler<ResponseEventArgs<UnsubscribeResponse>> UnsubscribeResponseReceived;
+
+        event EventHandler<ResponseEventArgs<SubscribeResponse>> SubscribeResponseReceived;
+
+        event EventHandler<ResponseEventArgs<CancelAllAfterResponse>> CancelAllAfterResponseReceived;
+
+        event EventHandler<ResponseEventArgs<AuthenticationResponse>> AuthenticationReceived;
+
+        event EventHandler<ResponseEventArgs<PongResponse>> PongResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<WalletDto>>> WalletResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TransactionDto>>> TransactionResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<SettlementDto>>> SettlementResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>> Quote5MResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>> Quote1MResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>> Quote1HResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>> Quote1DResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>> QuoteResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<NotificationDto>>> PublicNotificationResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<NotificationDto>>> PrivateNotificationResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<OrderBookDto>>> OrderBookL225ResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<OrderBookDto>>> OrderBookL2ResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<OrderBook10Dto>>> OrderBook10ResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<OrderDto>>> OrderResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<MarginDto>>> MarginResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<LiquidationDto>>> LiquidationResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<InsuranceDto>>> InsuranceResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<InstrumentDto>>> InstrumentResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<FundingDto>>> FundingResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<ExecutionDto>>> ExecutionResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<ChatConnectedDto>>> ChatConnectedResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<ChatDto>>> ChatResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<AnnouncementDto>>> AnnouncementResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<AffiliateDto>>> AffiliateResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>> TradeBucketed1DResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>> TradeBucketed1HResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>> TradeBucketed5MResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>> TradeBucketed1MResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<PositionDto>>> PositionResponseReceived;
+
+        event EventHandler<ResponseEventArgs<TableResponse<TradeDto>>> TradeResponseReceived;
     }
 
-    public class BitmexApiSocketService : IBitmexApiSocketService, IDisposable
+    public partial class BitmexApiSocketService : IBitmexApiSocketService, IDisposable
     {
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
         private const int SocketMessageResponseTimeout = 5000;
@@ -40,10 +122,11 @@ namespace Bitmex.NET
         private readonly IExpiresTimeProvider _expiresTimeProvider;
         private readonly ISignatureProvider _signatureProvider;
         private readonly IBitmexApiSocketProxy _bitmexApiSocketProxy;
-        private readonly IDictionary<string, IList<BitmexApiSubscriptionInfo>> _actions;
+        //private readonly IDictionary<string, IList<BitmexApiSubscriptionInfo>> _actions;
 
         private bool _isAuthorized;
         public bool IsAuthorized => _bitmexApiSocketProxy.IsAlive && _isAuthorized;
+        //public IBitmexApiSocketProxy BitmexApiSocketProxy => _bitmexApiSocketProxy;
 
         public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IExpiresTimeProvider expiresTimeProvider, ISignatureProvider signatureProvider, IBitmexApiSocketProxy bitmexApiSocketProxy)
         {
@@ -51,8 +134,8 @@ namespace Bitmex.NET
             _expiresTimeProvider = expiresTimeProvider;
             _signatureProvider = signatureProvider;
             _bitmexApiSocketProxy = bitmexApiSocketProxy;
-            _actions = new Dictionary<string, IList<BitmexApiSubscriptionInfo>>();
-            _bitmexApiSocketProxy.DataReceived += BitmexApiSocketProxyDataReceived;
+            //_actions = new Dictionary<string, IList<BitmexApiSubscriptionInfo>>();
+            _bitmexApiSocketProxy.MessageReceived += MessageReceived;
         }
 
         public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IBitmexApiSocketProxy bitmexApiSocketProxy) : this(bitmexAuthorization, new ExpiresTimeProvider(), new SignatureProvider(), bitmexApiSocketProxy)
@@ -84,107 +167,84 @@ namespace Bitmex.NET
         /// </summary>
         /// <exception cref="BitmexSocketSubscriptionException">Throws when either timeout is reached or server retured an error.</exception>
         /// <typeparam name="T">Expected type</typeparam>
-        /// <param name="subscription">Specific subscription details. Check out <see cref="BitmetSocketSubscriptions"/>.</param>
-        public void Subscribe(BitmexApiSubscriptionInfo subscription)
+        /// <param name="request">Specific subscription details.</param>
+        public void Subscribe(SubscriptionRequest request)
         {
-            var subscriptionName = subscription.SubscriptionName;
-            var message = new SocketSubscriptionMessage(subscription.SubscriptionWithArgs);
+            var topic = request.SubscriptionType.ToString().FirstToLower() + (string.IsNullOrEmpty(request.Symbol) ? string.Empty : ":" + request.Symbol);
             var respReceived = new ManualResetEvent(false);
-            bool success = false;
-            string error = string.Empty;
-            string status = string.Empty;
-            var errorArgs = new string[0];
-            void ResultReceived(object sender, OperationResultEventArgs args)
+            SubscribeResponse? response = null;
+            void ResultReceived(object sender, ResponseEventArgs<SubscribeResponse> e)
             {
-                if (args.OperationType == OperationType.subscribe)
+                if (e.Response.Subscribe == topic)
                 {
-                    error = args.Error;
-                    status = args.Status;
-                    success = args.Result;
-                    errorArgs = args.Args;
+                    response = e.Response;
                     respReceived.Set();
                 }
             }
-            _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
-            Log.Info($"Subscribing on {subscriptionName}...");
-            _bitmexApiSocketProxy.Send(message);
+
+            this.SubscribeResponseReceived += ResultReceived;
+            //_bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
+            Log.Info($"Subscribing on {topic}...");
+            _bitmexApiSocketProxy.Send(request);
             var waitReuslt = respReceived.WaitOne(SocketMessageResponseTimeout);
-            _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
+            this.SubscribeResponseReceived -= ResultReceived;
+            //_bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
             if (!waitReuslt)
             {
                 throw new BitmexSocketSubscriptionException("Subscription failed: timeout waiting subscription response");
             }
 
-            if (success)
+            if (response?.Success ?? false)
             {
-                Log.Info($"Successfully subscribed on {subscriptionName} ");
-                if (!_actions.ContainsKey(subscription.SubscriptionName))
-                {
-                    _actions.Add(subscription.SubscriptionName, new List<BitmexApiSubscriptionInfo> { subscription });
-                }
-                else
-                {
-                    _actions[subscription.SubscriptionName].Add(subscription);
-                }
+                Log.Info($"Successfully subscribed on {topic} ");
             }
             else
             {
-                Log.Error($"Failed to subscribe on {subscriptionName} {error} ");
-                throw new BitmexSocketSubscriptionException(error, errorArgs);
+                var error = response?.Error ?? "Unknown error.";
+                Log.Error($"Failed to subscribe on {topic} {error} ");
+                throw new BitmexSocketSubscriptionException(error, new[] { topic });
             }
         }
 
-        public async Task UnsubscribeAsync(BitmexApiSubscriptionInfo subscription)
+        public async Task UnsubscribeAsync(UnsubscriptionRequest request)
         {
-            var subscriptionName = subscription.SubscriptionName;
-            var message = new SocketUnsubscriptionMessage(subscription.SubscriptionWithArgs);
+            var topic = $"{request.UnsubscriptionType}:{request.Symbol ?? "All"}";
+
             using (var semafore = new SemaphoreSlim(0, 1))
             {
-                bool success = false;
-                string error = string.Empty;
-                string status = string.Empty;
-                var errorArgs = new string[0];
-                void ResultReceived(object sender, OperationResultEventArgs args)
+                UnsubscribeResponse? response = null;
+                void ResultReceived(object sender, ResponseEventArgs<UnsubscribeResponse> e)
                 {
-                    if (args.OperationType == OperationType.unsubscribe)
-                    {
-                        error = args.Error;
-                        status = args.Status;
-                        success = args.Result;
-                        errorArgs = args.Args;
-                        semafore.Release(1);
-                    }
+                    response = e.Response;
+                    semafore.Release(1);
                 }
-                _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
-                Log.Info($"Unsubscribing on {subscriptionName}...");
-                _bitmexApiSocketProxy.Send(message);
+
+                this.UnsubscribeResponseReceived += ResultReceived;
+                //_bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
+                Log.Info($"Unsubscribing on {topic}...");
+                _bitmexApiSocketProxy.Send(request);
                 var waitReuslt = await semafore.WaitAsync(SocketMessageResponseTimeout);
-                _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
+                this.UnsubscribeResponseReceived -= ResultReceived;
+                //_bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
                 if (!waitReuslt)
                 {
                     throw new BitmexSocketSubscriptionException("Unsubscription failed: timeout waiting unsubscription response");
                 }
 
-                if (success)
+                if (response?.Success ?? false)
                 {
-                    Log.Info($"Successfully unsubscribed on {subscriptionName} ");
-                    if (_actions.ContainsKey(subscription.SubscriptionName))
-                    {
-                        if (_actions[subscription.SubscriptionName].Contains(subscription))
-                        {
-                            _actions[subscription.SubscriptionName].Remove(subscription);
-                        }
-                    }
+                    Log.Info($"Successfully unsubscribed on {topic} ");
                 }
                 else
                 {
-                    Log.Error($"Failed to unsubscribe on {subscriptionName} {error} ");
-                    throw new BitmexSocketSubscriptionException(error, errorArgs);
+                    var error = response?.Error ?? "Unknown error.";
+                    Log.Error($"Failed to unsubscribe on {topic} {error} ");
+                    throw new BitmexSocketSubscriptionException(error, new[] { topic });
                 }
             }
         }
 
-        public void Unsubscribe(BitmexApiSubscriptionInfo subscription)
+        public void Unsubscribe(UnsubscriptionRequest subscription)
         {
             var task = UnsubscribeAsync(subscription);
             task.ConfigureAwait(false);
@@ -197,50 +257,87 @@ namespace Bitmex.NET
             var respReceived = new ManualResetEvent(false);
             var data = new string[0];
             var error = string.Empty;
-            void ResultReceived(object sender, OperationResultEventArgs args)
+            AuthenticationResponse? response = null;
+            void AuthenticationReceived(object sender, ResponseEventArgs<AuthenticationResponse> e)
             {
-                if (args.OperationType == OperationType.authKeyExpires)
-                {
-                    _isAuthorized = args.Result;
-                    error = args.Error;
-                    data = args.Args;
-                    respReceived.Set();
-                }
+                response = e.Response;
+                respReceived.Set();
             };
 
             var signatureString = _signatureProvider.CreateSignature(_bitmexAuthorization.Secret, $"GET/realtime{expiresTime}");
-            var message = new SocketAuthorizationMessage(_bitmexAuthorization.Key, expiresTime, signatureString);
-            _bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
+            var message = new AuthorizationRequest(_bitmexAuthorization.Key, expiresTime, signatureString);
+            this.AuthenticationReceived += AuthenticationReceived;
             Log.Info("Authorizing...");
             _bitmexApiSocketProxy.Send(message);
             var waitResult = respReceived.WaitOne(SocketMessageResponseTimeout);
-            _bitmexApiSocketProxy.OperationResultReceived -= ResultReceived;
+            this.AuthenticationReceived -= AuthenticationReceived;
+
             if (!waitResult)
             {
                 Log.Error("Timeout waiting authorization response");
                 throw new BitmexSocketAuthorizationException("Authorization Failed: timeout waiting authorization response");
             }
 
-            if (!IsAuthorized)
+            if (response?.Success ?? false)
+            {
+                Log.Info("Authorized successfully...");
+                _isAuthorized = true;
+                return IsAuthorized;
+            }
+            else
             {
                 Log.Error($"Not authorized {error}");
                 throw new BitmexSocketAuthorizationException(error, data);
             }
-
-            Log.Info("Authorized successfully...");
-            return IsAuthorized;
         }
 
-        private void BitmexApiSocketProxyDataReceived(object sender, DataEventArgs args)
+        private void MessageReceived(object sender, BitmexSocketMessageEventArgs e)
         {
-            if (_actions.ContainsKey(args.TableName))
+            if (PongResponse.TryParse(e.Message, OnPongResponse)) return;
+
+            var jsonElement = JsonDocument.Parse(e.Message).RootElement;
+            if (jsonElement.TryGetProperty("table", out _))
             {
-                foreach (var subscription in _actions[args.TableName])
-                {
-                    var data = args.Data;
-                    Task.Factory.StartNew(() => subscription.Execute(data, args.Action));
-                }
+                if (TableResponse<AffiliateDto>.TryHandle(jsonElement, OnAffiliateResponse, SubscriptionType.affiliate)) return;
+                if (TableResponse<AnnouncementDto>.TryHandle(jsonElement, OnAnnouncementResponse, SubscriptionType.announcement)) return;
+                if (TableResponse<ChatDto>.TryHandle(jsonElement, OnChatResponse, SubscriptionType.chat)) return;
+                if (TableResponse<ChatConnectedDto>.TryHandle(jsonElement, OnChatConnectedResponse, SubscriptionType.connected)) return;
+                if (TableResponse<ExecutionDto>.TryHandle(jsonElement, OnExecutionResponse, SubscriptionType.execution)) return;
+                if (TableResponse<FundingDto>.TryHandle(jsonElement, OnFundingResponse, SubscriptionType.funding)) return;
+                if (TableResponse<InstrumentDto>.TryHandle(jsonElement, OnInstrumentResponse, SubscriptionType.instrument)) return;
+                if (TableResponse<InsuranceDto>.TryHandle(jsonElement, OnInsuranceResponse, SubscriptionType.insurance)) return;
+                if (TableResponse<LiquidationDto>.TryHandle(jsonElement, OnLiquidationResponse, SubscriptionType.liquidation)) return;
+                if (TableResponse<MarginDto>.TryHandle(jsonElement, OnMarginResponse, SubscriptionType.margin)) return;
+                if (TableResponse<OrderDto>.TryHandle(jsonElement, OnOrderResponse, SubscriptionType.order)) return;
+                if (TableResponse<OrderBook10Dto>.TryHandle(jsonElement, OnOrderBook10Response, SubscriptionType.orderBook10)) return;
+                if (TableResponse<OrderBookDto>.TryHandle(jsonElement, OnOrderBookL2Response, SubscriptionType.orderBookL2)) return;
+                if (TableResponse<OrderBookDto>.TryHandle(jsonElement, OnOrderBookL225Response, SubscriptionType.orderBookL2_25)) return;
+                if (TableResponse<PositionDto>.TryHandle(jsonElement, OnPositionResponse, SubscriptionType.position)) return;
+                if (TableResponse<NotificationDto>.TryHandle(jsonElement, OnPrivateNotificationResponse, SubscriptionType.privateNotifications)) return;
+                if (TableResponse<NotificationDto>.TryHandle(jsonElement, OnPublicNotificationResponse, SubscriptionType.publicNotifications)) return;
+                if (TableResponse<QuoteDto>.TryHandle(jsonElement, OnQuoteResponse, SubscriptionType.quote)) return;
+                if (TableResponse<QuoteDto>.TryHandle(jsonElement, OnQuote1DResponse, SubscriptionType.quoteBin1d)) return;
+                if (TableResponse<QuoteDto>.TryHandle(jsonElement, OnQuote1HResponse, SubscriptionType.quoteBin1h)) return;
+                if (TableResponse<QuoteDto>.TryHandle(jsonElement, OnQuote1MResponse, SubscriptionType.quoteBin1m)) return;
+                if (TableResponse<QuoteDto>.TryHandle(jsonElement, OnQuote5MResponse, SubscriptionType.quoteBin5m)) return;
+                if (TableResponse<SettlementDto>.TryHandle(jsonElement, OnSettlementResponse, SubscriptionType.settlement)) return;
+                if (TableResponse<TradeDto>.TryHandle(jsonElement, OnTradeResponse, SubscriptionType.trade)) return;
+                if (TableResponse<TradeDto>.TryHandle(jsonElement, OnTradeResponse, SubscriptionType.trade)) return;
+                if (TableResponse<TradeBucketedDto>.TryHandle(jsonElement, OnTradeBucketed1DResponse, SubscriptionType.tradeBin1d)) return;
+                if (TableResponse<TradeBucketedDto>.TryHandle(jsonElement, OnTradeBucketed1HResponse, SubscriptionType.tradeBin1h)) return;
+                if (TableResponse<TradeBucketedDto>.TryHandle(jsonElement, OnTradeBucketed1MResponse, SubscriptionType.tradeBin1m)) return;
+                if (TableResponse<TradeBucketedDto>.TryHandle(jsonElement, OnTradeBucketed5MResponse, SubscriptionType.tradeBin5m)) return;
+                if (TableResponse<TransactionDto>.TryHandle(jsonElement, OnTransactionResponse, SubscriptionType.transact)) return;
+                if (TableResponse<WalletDto>.TryHandle(jsonElement, OnWalletResponse, SubscriptionType.wallet)) return;
             }
+            if (AuthenticationResponse.TryParse(jsonElement, OnAuthenticationResponse)) return;
+            if (CancelAllAfterResponse.TryHandle(jsonElement, OnCancelAllAfterResponse)) return;
+            //if (ErrorResponse.TryParse(jsonElement, OnErrorResponse)) return;
+            if (SubscribeResponse.TryParse(jsonElement, OnSubscribeResponse)) return;
+            if (UnsubscribeResponse.TryParse(jsonElement, OnUnsubscribeResponse)) return;
+            if (WelcomeInfoResponse.TryParse(jsonElement, OnWelcomeInfoResponse)) return;
+
+            Log.Warn($"Unknown type message.{e.Message}");
         }
 
         public static IBitmexApiSocketService CreateDefaultApi(IBitmexAuthorization bitmexAuthorization)
@@ -248,10 +345,44 @@ namespace Bitmex.NET
             return new BitmexApiSocketService(bitmexAuthorization, new BitmexApiSocketProxy(bitmexAuthorization));
         }
 
+        #region IDisposable Support
+
+        private bool disposedValue = false; // 要检测冗余调用
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TO DO: 释放托管状态(托管对象)。
+                    _bitmexApiSocketProxy?.Dispose();
+                    Log.Info("Disposed...");
+                }
+
+                // TO DO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
+                // TO DO: 将大型字段设置为 null。
+
+                disposedValue = true;
+            }
+        }
+
+        // TO DO: 仅当以上 Dispose(bool disposing) 拥有用于释放未托管资源的代码时才替代终结器。
+        // ~BitmexApiSocketService()
+        // {
+        //   // 请勿更改此代码。将清理代码放入以上 Dispose(bool disposing) 中。
+        //   Dispose(false);
+        // }
+
+        // 添加此代码以正确实现可处置模式。
         public void Dispose()
         {
-            _bitmexApiSocketProxy?.Dispose();
-            Log.Info("Disposed...");
+            // 请勿更改此代码。将清理代码放入以上 Dispose(bool disposing) 中。
+            Dispose(true);
+            // TO DO: 如果在以上内容中替代了终结器，则取消注释以下行。
+            // GC.SuppressFinalize(this);
         }
+
+        #endregion IDisposable Support
     }
 }

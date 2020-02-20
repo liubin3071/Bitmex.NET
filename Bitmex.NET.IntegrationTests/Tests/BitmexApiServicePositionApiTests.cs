@@ -10,7 +10,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
     [TestCategory("REST")]
     public class BitmexApiServicePositionApiTests : IntegrationTestsClass<IBitmexApiService>
     {
-
         [TestMethod]
         public void should_get_all_the_positions()
         {

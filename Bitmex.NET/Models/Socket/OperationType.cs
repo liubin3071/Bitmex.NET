@@ -4,6 +4,10 @@
     {
         subscribe,
         unsubscribe,
-        authKeyExpires
+
+        //authKey,
+        authKeyExpires,
+
+        cancelAllAfter
     }
 }

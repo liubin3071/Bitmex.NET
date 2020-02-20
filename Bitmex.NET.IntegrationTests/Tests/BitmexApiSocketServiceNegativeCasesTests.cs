@@ -49,7 +49,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
             // assert
             catch (BitmexSocketAuthorizationException)
@@ -73,7 +73,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
             // assert
             catch (BitmexSocketAuthorizationException)

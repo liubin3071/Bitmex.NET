@@ -11,7 +11,7 @@ namespace Bitmex.NET.IntegrationTests
         /// Used to avoid exciding subscription limitation within the tests
         /// Each test that subscribes on something has to initialize this field. It will be released automaticaly after test completion
         /// </summary>
-        protected BitmexApiSubscriptionInfo Subscription;
+        protected SubscriptionRequest Subscription;
 
         [TestCleanup]
         public override void TestCleanup()
@@ -26,7 +26,7 @@ namespace Bitmex.NET.IntegrationTests
             {
                 try
                 {
-                    Sut.Unsubscribe(Subscription);
+                    Sut.Unsubscribe(Subscription.CreateUnsubscriptionRequest());
                 }
                 catch (Exception e)
                 {

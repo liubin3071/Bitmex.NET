@@ -15,6 +15,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Bitmex.NET.Example.Automapping;
+using Bitmex.NET.Models.Socket;
+using CoinGroup.Market.Bitmex.Models.Websockets.Requests;
 
 namespace Bitmex.NET.Example
 {
@@ -123,6 +125,119 @@ namespace Bitmex.NET.Example
             try
             {
                 IsConnected = _bitmexApiSocketService.Connect();
+                _bitmexApiSocketService.InstrumentResponseReceived += (sender, args) =>
+                {
+                    var message = args.Response;
+                    foreach (var instrumentDto in message.Data)
+                    {
+                        lock (_syncObj)
+                        {
+                            var existing = Instruments.FirstOrDefault(a => a.Symbol == instrumentDto.Symbol);
+                            if (existing != null && message.Action == BitmexActions.Update)
+                            {
+                                BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto, existing);
+                            }
+                            else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
+                            {
+                                Instruments.Add(BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto));
+                            }
+                        }
+                    }
+                };
+                _bitmexApiSocketService.OrderResponseReceived += (sender, args) =>
+                {
+                    var message = args.Response;
+                    foreach (var order in message.Data)
+                    {
+                        lock (_syncObjOrders)
+                        {
+                            var existing = OrderUpdates.FirstOrDefault(a => a.OrderId == order.OrderId);
+                            if (existing != null && message.Action == BitmexActions.Update)
+                            {
+                                BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order, existing);
+                            }
+                            else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
+                            {
+                                OrderUpdates.Add(BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order));
+                            }
+                        }
+
+                        OnPropertyChanged(nameof(OrderUpdates));
+                    }
+                };
+                _bitmexApiSocketService.OrderBook10ResponseReceived += (sender, args) =>
+                {
+                    var message = args.Response;
+
+                    foreach (var dto in message.Data)
+                    {
+                        if (dto.Symbol != "XBTUSD")
+                        {
+                            continue;
+                        }
+
+                        lock (_syncObjOrderBook10)
+                        {
+                            OrderBook10 = dto.Asks.Select(a =>
+                                    new OrderBookModel { Direction = "Sell", Price = a[0], Size = a[1] })
+                                .Union(dto.Asks.Select(a =>
+                                    new OrderBookModel { Direction = "Buy", Price = a[0], Size = a[1] })).ToList();
+                        }
+
+                        OnPropertyChanged(nameof(OrderBook10));
+                    }
+                };
+                _bitmexApiSocketService.OrderBookL225ResponseReceived += (sender, args) =>
+                {
+                    var message = args.Response;
+
+                    foreach (var dto in message.Data)
+                    {
+                        if (dto.Symbol != "XBTUSD")
+                        {
+                            continue;
+                        }
+
+                        lock (_syncObjOrderBookL2)
+                        {
+                            if (message.Action == BitmexActions.Partial)
+                            {
+                                OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
+                            }
+
+                            if (message.Action == BitmexActions.Insert)
+                            {
+                                OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
+                            }
+
+                            if (message.Action == BitmexActions.Delete)
+                            {
+                                var existing = OrderBookL2.FirstOrDefault(a => a.Id == dto.Id);
+                                if (existing != null)
+                                {
+                                    OrderBookL2.Remove(existing);
+                                }
+                            }
+
+                            if (message.Action == BitmexActions.Update)
+                            {
+                                var existing = OrderBookL2.FirstOrDefault(a => a.Id == dto.Id);
+                                if (existing == null)
+                                {
+                                    OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
+                                }
+                                else
+                                {
+                                    BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto, existing);
+                                }
+                            }
+
+                            //OrderBookL2 = OrderBookL2.OrderBy(c => c.Id).ToList();
+                        }
+
+                        OnPropertyChanged(nameof(OrderBookL2));
+                    }
+                };
             }
             catch (Exception e)
             {
@@ -131,117 +246,30 @@ namespace Bitmex.NET.Example
 
             if (IsConnected)
             {
-                _bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateInstrumentSubsription(
-                    message =>
-                    {
-                        foreach (var instrumentDto in message.Data)
-                        {
-                            lock (_syncObj)
-                            {
-                                var existing = Instruments.FirstOrDefault(a => a.Symbol == instrumentDto.Symbol);
-                                if (existing != null && message.Action == BitmexActions.Update)
-                                {
-                                    BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto, existing);
-                                }
-                                else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
-                                {
-                                    Instruments.Add(BitmexMapper.Instance.Map<InstrumentDto, InstrumentModel>(instrumentDto));
-                                }
-                            }
-                        }
-                    }));
+                _bitmexApiSocketService.Subscribe(BitmexSocketRequests.CreateSubscriptionRequest(SubscriptionType.instrument));
+                _bitmexApiSocketService.Subscribe(BitmexSocketRequests.CreateSubscriptionRequest(SubscriptionType.order));
+                _bitmexApiSocketService.Subscribe(BitmexSocketRequests.CreateSubscriptionRequest(SubscriptionType.orderBook10));
+                _bitmexApiSocketService.Subscribe(BitmexSocketRequests.CreateSubscriptionRequest(SubscriptionType.orderBookL2_25));
 
-                _bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderSubsription(
-                    message =>
-                    {
-                        foreach (var order in message.Data)
-                        {
-                            lock (_syncObjOrders)
-                            {
-                                var existing = OrderUpdates.FirstOrDefault(a => a.OrderId == order.OrderId);
-                                if (existing != null && message.Action == BitmexActions.Update)
-                                {
-                                    BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order, existing);
-                                }
-                                else if (message.Action != BitmexActions.Partial && message.Action != BitmexActions.Delete)
-                                {
-                                    OrderUpdates.Add(BitmexMapper.Instance.Map<OrderDto, OrderUpdateModel>(order));
-                                }
-                            }
+                //_bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateInstrumentSubsription(
+                //    message =>
+                //    {
+                //    }));
 
-                            OnPropertyChanged(nameof(OrderUpdates));
-                        }
-                    }));
+                //_bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderSubsription(
+                //    message =>
+                //    {
+                //    }));
 
-                _bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderBook10Subsription(
-                    message =>
-                    {
-                        foreach (var dto in message.Data)
-                        {
-                            if (dto.Symbol != "XBTUSD")
-                            {
-                                continue;
-                            }
+                //_bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderBook10Subsription(
+                //    message =>
+                //    {
+                //    }));
 
-                            lock (_syncObjOrderBook10)
-                            {
-                                OrderBook10 = dto.Asks.Select(a =>
-                                    new OrderBookModel { Direction = "Sell", Price = a[0], Size = a[1] })
-                                    .Union(dto.Asks.Select(a =>
-                                        new OrderBookModel { Direction = "Buy", Price = a[0], Size = a[1] })).ToList();
-                            }
-
-                            OnPropertyChanged(nameof(OrderBook10));
-                        }
-                    }));
-
-                _bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderBookL2Subsription(
-                    message =>
-                    {
-                        foreach (var dto in message.Data)
-                        {
-                            if (dto.Symbol != "XBTUSD")
-                            {
-                                continue;
-                            }
-
-                            lock (_syncObjOrderBookL2)
-                            {
-                                if (message.Action == BitmexActions.Partial)
-                                {
-                                    OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
-                                }
-                                if (message.Action == BitmexActions.Insert)
-                                {
-                                    OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
-                                }
-                                if (message.Action == BitmexActions.Delete)
-                                {
-                                    var existing = OrderBookL2.FirstOrDefault(a => a.Id == dto.Id);
-                                    if (existing != null)
-                                    {
-                                        OrderBookL2.Remove(existing);
-                                    }
-                                }
-
-                                if (message.Action == BitmexActions.Update)
-                                {
-                                    var existing = OrderBookL2.FirstOrDefault(a => a.Id == dto.Id);
-                                    if (existing == null)
-                                    {
-                                        OrderBookL2.Add(BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto));
-                                    }
-                                    else
-                                    {
-                                        BitmexMapper.Instance.Map<OrderBookDto, OrderBookModel>(dto, existing);
-                                    }
-                                }
-
-                                //OrderBookL2 = OrderBookL2.OrderBy(c => c.Id).ToList();
-                            }
-                            OnPropertyChanged(nameof(OrderBookL2));
-                        }
-                    }));
+                //_bitmexApiSocketService.Subscribe(BitmetSocketSubscriptions.CreateOrderBookL2Subsription(
+                //    message =>
+                //    {
+                //    }));
             }
         }
 

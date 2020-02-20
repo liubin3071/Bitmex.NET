@@ -47,14 +47,17 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IList<OrderDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmexApiSubscriptionInfo<IEnumerable<OrderDto>>.Create(SubscriptionType.order, a =>
+
+                Sut.OrderResponseReceived += (sender, args) =>
                 {
-                    if (a.Data.Any(b => b.Symbol == "XBTUSD") && a.Action == BitmexActions.Insert)
+                    if (args.Response.Data.Any(b => b.Symbol == "XBTUSD") && args.Response.Action == BitmexActions.Insert)
                     {
-                        dtos = a.Data.ToList();
+                        dtos = args.Response.Data;
                         dataReceived.Set();
                     }
-                });
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.order);
 
                 Subscription = subscription;
 
@@ -80,7 +83,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -96,14 +99,15 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IList<OrderDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmexApiSubscriptionInfo<IEnumerable<OrderDto>>.Create(SubscriptionType.order, a =>
+                Sut.OrderResponseReceived += (sender, args) =>
                 {
-                    if (a.Data.Any(b => b.Symbol == "XBTUSD") && a.Action == BitmexActions.Insert)
+                    if (args.Response.Data.Any(b => b.Symbol == "XBTUSD") && args.Response.Action == BitmexActions.Insert)
                     {
-                        dtos = a.Data.ToList();
+                        dtos = args.Response.Data.ToList();
                         dataReceived.Set();
                     }
-                });
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.order);
 
                 Subscription = subscription;
 
@@ -126,7 +130,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -142,14 +146,15 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IList<OrderDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmexApiSubscriptionInfo<IEnumerable<OrderDto>>.Create(SubscriptionType.order, a =>
+                Sut.OrderResponseReceived += (sender, args) =>
                 {
-                    if (a.Data.Any(b => b.Symbol == "XBTUSD") && a.Action == BitmexActions.Insert)
+                    if (args.Response.Data.Any(b => b.Symbol == "XBTUSD") && args.Response.Action == BitmexActions.Insert)
                     {
-                        dtos = a.Data.ToList();
+                        dtos = args.Response.Data.ToList();
                         dataReceived.Set();
                     }
-                });
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.order);
 
                 Subscription = subscription;
 
@@ -172,7 +177,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
     }

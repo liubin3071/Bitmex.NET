@@ -711,19 +711,19 @@ namespace Bitmex.NET.Models
         /// Order ID(s).
         /// </summary>
         [DisplayName("orderID")]
-        public string OrderID { get; set; }
+        public string? OrderID { get; set; }
 
         /// <summary>
         /// Client Order ID(s). See POST /order.
         /// </summary>
         [DisplayName("clOrdID")]
-        public string ClOrdID { get; set; }
+        public string? ClOrdID { get; set; }
 
         /// <summary>
         /// Optional cancellation annotation. e.g. 'Spread Exceeded'.
         /// </summary>
         [DisplayName("text")]
-        public string Text { get; set; }
+        public string? Text { get; set; }
     }
 
     /// <summary>
@@ -735,7 +735,7 @@ namespace Bitmex.NET.Models
         ///  Optional symbol.If provided, only cancels orders for that symbol.
         /// </summary>
         [DisplayName("symbol")]
-        public string Symbol { get; set; }
+        public string? Symbol { get; set; }
 
         /// <summary>
         /// Optional filter for cancellation. Use to only cancel some orders, e.g. {"side": "Buy"}.
@@ -747,7 +747,7 @@ namespace Bitmex.NET.Models
         /// Optional cancellation annotation.e.g. 'Spread Exceeded'
         /// </summary>
         [DisplayName("text")]
-        public string Text { get; set; }
+        public string? Text { get; set; }
     }
 
     /// <summary>
@@ -897,6 +897,7 @@ namespace Bitmex.NET.Models
         public decimal Amount { get; set; }
     }
 
+    [Obsolete("this API doesn't work from ~2018-08-03")]
     public partial class QuoteGETRequestParams : QueryStringParamsWithFilter
     {
         /// <summary>
@@ -910,7 +911,7 @@ namespace Bitmex.NET.Models
         /// Array of column names to fetch. If omitted, will return all columns.   Note that this method will always return item keys, even when not specified, so you may receive more columns that you expect.
         /// </summary>
         [DisplayName("columns")]
-        public string Columns { get; set; }
+        public string[]? Columns { get; set; }
 
         /// <summary>
         /// Number of results to fetch.

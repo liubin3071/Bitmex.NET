@@ -29,9 +29,9 @@ namespace Bitmex.NET.Dtos
         public decimal? GrossValue { get; set; }
 
         [JsonPropertyName("homeNotional")]
-        public decimal HomeNotional { get; set; }
+        public decimal? HomeNotional { get; set; }
 
         [JsonPropertyName("foreignNotional")]
-        public decimal ForeignNotional { get; set; }
+        public decimal? ForeignNotional { get; set; }
     }
 }

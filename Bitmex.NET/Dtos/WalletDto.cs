@@ -30,6 +30,5 @@ namespace Bitmex.NET.Dtos
         public string Addr { get; set; }
         public string Script { get; set; }
         public List<string> WithdrawalLock { get; set; }
-
     }
 }

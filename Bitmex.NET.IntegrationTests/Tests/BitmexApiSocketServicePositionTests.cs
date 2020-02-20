@@ -1,5 +1,4 @@
-﻿
-using Bitmex.NET.Dtos;
+﻿using Bitmex.NET.Dtos;
 using Bitmex.NET.Models;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Bitmex.NET.Models.Socket;
 using Unity;
 
 namespace Bitmex.NET.IntegrationTests.Tests
@@ -29,7 +29,6 @@ namespace Bitmex.NET.IntegrationTests.Tests
             };
 
             _bitmexApiService.Execute(BitmexApiUrls.Order.PostOrderCancelAllAfter, paramCloseAfter).Wait();
-
         }
 
         [TestMethod]
@@ -42,11 +41,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var @params = OrderPOSTRequestParams.CreateSimpleMarket("XBTUSD", 3, OrderSide.Buy);
                 IList<PositionDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreatePositionSubsription(a =>
+                Sut.PositionResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data.ToList();
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                });
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.position);
 
                 Subscription = subscription;
 
@@ -71,7 +71,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
     }

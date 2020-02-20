@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,6 +33,24 @@ namespace Bitmex.NET
         public static string Serialize(object obj, Type inputType)
         {
             return JsonSerializer.Serialize(obj, inputType, DefaultOptions);
+        }
+
+        public static TResult Deserialize<TResult>(JsonDocument jsonDocument)
+        {
+            return Deserialize<TResult>(jsonDocument.RootElement);
+        }
+
+        public static TResult Deserialize<TResult>(JsonElement jsonElement)
+        {
+#if NETSTANDARD2_0
+            return JsonSerializer.Deserialize<TResult>(jsonElement.GetRawText(), DefaultOptions);
+#else
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            using var writer = new Utf8JsonWriter(bufferWriter);
+            jsonElement.WriteTo(writer);
+            writer.Flush();
+            return JsonSerializer.Deserialize<TResult>(bufferWriter.WrittenSpan, DefaultOptions);
+#endif
         }
     }
 }

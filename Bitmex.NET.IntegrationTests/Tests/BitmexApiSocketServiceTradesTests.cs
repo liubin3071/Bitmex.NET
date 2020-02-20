@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Bitmex.NET.Dtos.Socket;
+using Bitmex.NET.Models.Socket;
 
 namespace Bitmex.NET.IntegrationTests.Tests
 {
@@ -21,11 +23,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var connected = Sut.Connect();
                 IEnumerable<TradeDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateTradeSubsription(a =>
+                Sut.TradeResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                });
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.trade);
 
                 Subscription = subscription;
                 // act
@@ -42,7 +45,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -55,11 +58,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var connected = Sut.Connect();
                 IEnumerable<TradeDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateTradeSubsription(a =>
+                Sut.TradeResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                }).WithArgs("XBTUSD");
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.trade, "XBTUSD");
 
                 Subscription = subscription;
 
@@ -77,7 +81,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -90,11 +94,12 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var connected = Sut.Connect();
                 IEnumerable<TradeBucketedDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateTradeBucket1MSubsription(a =>
+                Sut.TradeBucketed1MResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                }).WithArgs("XBTUSD");
+                };
+                var subscription = new SubscriptionRequest(SubscriptionType.tradeBin1m, "XBTUSD");
 
                 Subscription = subscription;
 
@@ -112,7 +117,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
     }

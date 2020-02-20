@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Bitmex.NET.Models.Socket;
 
 namespace Bitmex.NET.IntegrationTests.Tests
 {
@@ -24,11 +25,13 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IEnumerable<OrderBook10Dto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateOrderBook10Subsription(a =>
+                Sut.OrderBook10ResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                });
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.orderBook10);
 
                 Subscription = subscription;
 
@@ -44,7 +47,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -59,11 +62,13 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IEnumerable<OrderBook10Dto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateOrderBook10Subsription(a =>
+                Sut.OrderBook10ResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                }).WithArgs("XBTUSD");
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.orderBook10, "XBTUSD");
 
                 Subscription = subscription;
 
@@ -80,7 +85,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -95,11 +100,13 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IEnumerable<OrderBookDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateOrderBookL2Subsription(a =>
+                Sut.OrderBookL2ResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                });
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.orderBookL2);
 
                 Subscription = subscription;
 
@@ -115,7 +122,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
 
@@ -130,11 +137,13 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 // act
                 IEnumerable<OrderBookDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateOrderBookL2Subsription(a =>
+                Sut.OrderBookL2ResponseReceived += (sender, args) =>
                 {
-                    dtos = a.Data;
+                    dtos = args.Response.Data;
                     dataReceived.Set();
-                }).WithArgs("XBTUSD");
+                };
+
+                var subscription = new SubscriptionRequest(SubscriptionType.orderBookL2, "XBTUSD");
                 Subscription = subscription;
 
                 Sut.Subscribe(subscription);
@@ -150,7 +159,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
     }

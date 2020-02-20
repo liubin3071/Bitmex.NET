@@ -1,0 +1,49 @@
+{
+  "info": "See https://testnet.bitmex.com/app/wsAPI and https://testnet.bitmex.com/explorer for more documentation.",
+  "usage": "Send a message in the format: {\"op\": string, \"args\": Array<string>}",
+  "ops": [
+    "authKey",
+    "authKeyExpires",
+    "cancelAllAfter",
+    "subscribe",
+    "unsubscribe"
+  ],
+  "subscribe": "To subscribe, send: {\"op\": \"subscribe\", \"args\": [subscriptionTopic, ...]}.",
+  "subscriptionSubjects": {
+    "authenticationRequired": [
+      "privateNotifications",
+      "account",
+      "wallet",
+      "affiliate",
+      "margin",
+      "position",
+      "transact",
+      "order",
+      "execution"
+    ],
+    "public": [
+      "announcement",
+      "connected",
+      "chat",
+      "publicNotifications",
+      "instrument",
+      "settlement",
+      "funding",
+      "insurance",
+      "liquidation",
+      "orderBookL2",
+      "orderBookL2_25",
+      "orderBook10",
+      "quote",
+      "trade",
+      "quoteBin1m",
+      "quoteBin5m",
+      "quoteBin1h",
+      "quoteBin1d",
+      "tradeBin1m",
+      "tradeBin5m",
+      "tradeBin1h",
+      "tradeBin1d"
+    ]
+  }
+}

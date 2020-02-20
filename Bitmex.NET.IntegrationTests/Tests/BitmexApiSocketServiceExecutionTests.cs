@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Bitmex.NET.Models.Socket;
 using Unity;
 
 namespace Bitmex.NET.IntegrationTests.Tests
@@ -21,8 +22,8 @@ namespace Bitmex.NET.IntegrationTests.Tests
         {
             base.TestInitialize();
             _bitmexApiService = Container.Resolve<IBitmexApiService>();
-
         }
+
         [TestMethod]
         public void should_subscribe_on_executions()
         {
@@ -32,15 +33,17 @@ namespace Bitmex.NET.IntegrationTests.Tests
                 var connected = Sut.Connect();
                 IEnumerable<ExecutionDto> dtos = null;
                 var dataReceived = new ManualResetEvent(false);
-                var subscription = BitmetSocketSubscriptions.CreateExecutionSubsription(a =>
+
+                Sut.ExecutionResponseReceived += (sender, args) =>
                 {
-                    if (a.Data.Any())
+                    if (args.Response.Data.Any())
                     {
-                        dtos = a.Data;
+                        dtos = args.Response.Data;
                         dataReceived.Set();
                     }
+                };
 
-                });
+                var subscription = new SubscriptionRequest(SubscriptionType.execution);
 
                 Subscription = subscription;
                 // act
@@ -59,7 +62,7 @@ namespace Bitmex.NET.IntegrationTests.Tests
             }
             catch (BitmexWebSocketLimitReachedException)
             {
-                Assert.Inconclusive("connection limit reached");
+                Assert.Fail("connection limit reached");
             }
         }
     }
