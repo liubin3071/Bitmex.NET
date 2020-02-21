@@ -1,7 +1,8 @@
 ﻿using Bitmex.NET.Authorization;
 using Bitmex.NET.Dtos;
-using Bitmex.NET.Logging;
 using Bitmex.NET.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -14,7 +15,7 @@ namespace Bitmex.NET
 {
     public class BitmexApiProxy : IBitmexApiProxy
     {
-        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        private readonly ILogger _logger;
 
         private readonly IBitmexAuthorization _bitmexAuthorization;
         private readonly IExpiresTimeProvider _expiresTimeProvider;
@@ -23,12 +24,12 @@ namespace Bitmex.NET
         private readonly HttpClient _httpClient;
         private readonly DateTime _epochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
 
-        public BitmexApiProxy(IBitmexAuthorization bitmexAuthorization, IExpiresTimeProvider expiresTimeProvider, ISignatureProvider signatureProvider)
+        public BitmexApiProxy(IBitmexAuthorization bitmexAuthorization, IExpiresTimeProvider expiresTimeProvider, ISignatureProvider signatureProvider, ILogger<BitmexApiProxy>? logger = null)
         {
             _bitmexAuthorization = bitmexAuthorization;
             _expiresTimeProvider = expiresTimeProvider;
             _signatureProvider = signatureProvider;
-
+            _logger = logger ?? NullLogger<BitmexApiProxy>.Instance;
             _httpClient = new HttpClient { BaseAddress = new Uri($"https://{Environments.Values[_bitmexAuthorization.BitmexEnvironment]}") };
 
             _httpClient.DefaultRequestHeaders.Add("api-key", _bitmexAuthorization.Key ?? string.Empty);
@@ -39,7 +40,7 @@ namespace Bitmex.NET
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/javascript"));
         }
 
-        public BitmexApiProxy(IBitmexAuthorization bitmexAuthorization) : this(bitmexAuthorization, new ExpiresTimeProvider(), new SignatureProvider())
+        public BitmexApiProxy(IBitmexAuthorization bitmexAuthorization, ILogger<BitmexApiProxy>? logger = null) : this(bitmexAuthorization, new ExpiresTimeProvider(), new SignatureProvider(), logger)
         {
         }
 
@@ -71,7 +72,7 @@ namespace Bitmex.NET
         {
             var content = parameters?.ToJson() ?? string.Empty;
             var url = GetUrl(action);
-            Log.Debug($"{action} sending content:{content}");
+            _logger.LogDebug($"{action} sending content:{content}");
             var request = new HttpRequestMessage(method, url)
             {
                 Content = new StringContent(content, Encoding.UTF8, "application/json")
@@ -86,12 +87,12 @@ namespace Bitmex.NET
         {
             Sign(request, @params);
 
-            Log.Debug($"{request.Method} {request.RequestUri}");
+            _logger.LogDebug($"{request.Method} {request.RequestUri}");
 
             var response = await _httpClient.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
 
-            Log.Debug($"{request.Method} {request.RequestUri.PathAndQuery} {(response.IsSuccessStatusCode ? "resp" : "errorResp")}:{responseString}");
+            _logger.LogDebug($"{request.Method} {request.RequestUri.PathAndQuery} {(response.IsSuccessStatusCode ? "resp" : "errorResp")}:{responseString}");
 
             int rateLimitLimit = default, rateLimitRemaining = default;
             DateTime rateLimitReset = default;
@@ -103,7 +104,7 @@ namespace Bitmex.NET
             if (response.Headers.TryGetValues("x-ratelimit-reset", out var ratelimitreset) && ratelimitreset.Any())
                 rateLimitReset = _epochTime.AddSeconds(long.Parse(ratelimitreset.First()));
 
-            Log.Debug($"{request.Method} {request.RequestUri.PathAndQuery} x-ratelimit-limit:{rateLimitLimit} x-ratelimit-remaining:{rateLimitRemaining} x-ratelimit-reset:{rateLimitReset}");
+            _logger.LogDebug($"{request.Method} {request.RequestUri.PathAndQuery} x-ratelimit-limit:{rateLimitLimit} x-ratelimit-remaining:{rateLimitRemaining} x-ratelimit-reset:{rateLimitReset}");
 
             if (!response.IsSuccessStatusCode)
             {

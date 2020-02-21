@@ -1,19 +1,18 @@
 ﻿using Bitmex.NET.Authorization;
-using Bitmex.NET.Logging;
-using Bitmex.NET.Models.Socket;
-using Bitmex.NET.Models.Socket.Events;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Bitmex.NET.Dtos;
 using Bitmex.NET.Dtos.Socket;
+using Bitmex.NET.Models.Socket;
+using Bitmex.NET.Models.Socket.Events;
 using Bitmex.NET.Models.Socket.Responses;
 using Bitmex.NET.Models.Socket.Responses.OperationResponses;
 using Bitmex.NET.Models.Socket.Responses.RawResponses;
 using Bitmex.NET.Models.Socket.Responses.TableResponses;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Bitmex.NET
 {
@@ -115,7 +114,7 @@ namespace Bitmex.NET
 
     public partial class BitmexApiSocketService : IBitmexApiSocketService, IDisposable
     {
-        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        private readonly ILogger _logger;
         private const int SocketMessageResponseTimeout = 5000;
 
         private readonly IBitmexAuthorization _bitmexAuthorization;
@@ -128,17 +127,18 @@ namespace Bitmex.NET
         public bool IsAuthorized => _bitmexApiSocketProxy.IsAlive && _isAuthorized;
         //public IBitmexApiSocketProxy BitmexApiSocketProxy => _bitmexApiSocketProxy;
 
-        public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IExpiresTimeProvider expiresTimeProvider, ISignatureProvider signatureProvider, IBitmexApiSocketProxy bitmexApiSocketProxy)
+        public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IExpiresTimeProvider expiresTimeProvider, ISignatureProvider signatureProvider, IBitmexApiSocketProxy bitmexApiSocketProxy, ILogger<BitmexApiSocketService>? logger = null)
         {
             _bitmexAuthorization = bitmexAuthorization;
             _expiresTimeProvider = expiresTimeProvider;
             _signatureProvider = signatureProvider;
             _bitmexApiSocketProxy = bitmexApiSocketProxy;
+            _logger = logger ?? NullLogger<BitmexApiSocketService>.Instance;
             //_actions = new Dictionary<string, IList<BitmexApiSubscriptionInfo>>();
             _bitmexApiSocketProxy.MessageReceived += MessageReceived;
         }
 
-        public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IBitmexApiSocketProxy bitmexApiSocketProxy) : this(bitmexAuthorization, new ExpiresTimeProvider(), new SignatureProvider(), bitmexApiSocketProxy)
+        public BitmexApiSocketService(IBitmexAuthorization bitmexAuthorization, IBitmexApiSocketProxy bitmexApiSocketProxy, ILogger<BitmexApiSocketService>? logger = null) : this(bitmexAuthorization, new ExpiresTimeProvider(), new SignatureProvider(), bitmexApiSocketProxy, logger)
         {
         }
 
@@ -154,7 +154,7 @@ namespace Bitmex.NET
             var connectionResult = _bitmexApiSocketProxy.Connect();
             if (!connectionResult)
             {
-                Log.Info("WebSocket connection failed");
+                _logger.LogInformation("WebSocket connection failed");
                 return false;
             }
 
@@ -184,7 +184,7 @@ namespace Bitmex.NET
 
             this.SubscribeResponseReceived += ResultReceived;
             //_bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
-            Log.Info($"Subscribing on {topic}...");
+            _logger.LogInformation($"Subscribing on {topic}...");
             _bitmexApiSocketProxy.Send(request);
             var waitReuslt = respReceived.WaitOne(SocketMessageResponseTimeout);
             this.SubscribeResponseReceived -= ResultReceived;
@@ -196,12 +196,12 @@ namespace Bitmex.NET
 
             if (response?.Success ?? false)
             {
-                Log.Info($"Successfully subscribed on {topic} ");
+                _logger.LogInformation($"Successfully subscribed on {topic} ");
             }
             else
             {
                 var error = response?.Error ?? "Unknown error.";
-                Log.Error($"Failed to subscribe on {topic} {error} ");
+                _logger.LogError($"Failed to subscribe on {topic} {error} ");
                 throw new BitmexSocketSubscriptionException(error, new[] { topic });
             }
         }
@@ -221,7 +221,7 @@ namespace Bitmex.NET
 
                 this.UnsubscribeResponseReceived += ResultReceived;
                 //_bitmexApiSocketProxy.OperationResultReceived += ResultReceived;
-                Log.Info($"Unsubscribing on {topic}...");
+                _logger.LogInformation($"Unsubscribing on {topic}...");
                 _bitmexApiSocketProxy.Send(request);
                 var waitReuslt = await semafore.WaitAsync(SocketMessageResponseTimeout);
                 this.UnsubscribeResponseReceived -= ResultReceived;
@@ -233,12 +233,12 @@ namespace Bitmex.NET
 
                 if (response?.Success ?? false)
                 {
-                    Log.Info($"Successfully unsubscribed on {topic} ");
+                    _logger.LogInformation($"Successfully unsubscribed on {topic} ");
                 }
                 else
                 {
                     var error = response?.Error ?? "Unknown error.";
-                    Log.Error($"Failed to unsubscribe on {topic} {error} ");
+                    _logger.LogError($"Failed to unsubscribe on {topic} {error} ");
                     throw new BitmexSocketSubscriptionException(error, new[] { topic });
                 }
             }
@@ -267,26 +267,26 @@ namespace Bitmex.NET
             var signatureString = _signatureProvider.CreateSignature(_bitmexAuthorization.Secret, $"GET/realtime{expiresTime}");
             var message = new AuthorizationRequest(_bitmexAuthorization.Key, expiresTime, signatureString);
             this.AuthenticationReceived += AuthenticationReceived;
-            Log.Info("Authorizing...");
+            _logger.LogInformation("Authorizing...");
             _bitmexApiSocketProxy.Send(message);
             var waitResult = respReceived.WaitOne(SocketMessageResponseTimeout);
             this.AuthenticationReceived -= AuthenticationReceived;
 
             if (!waitResult)
             {
-                Log.Error("Timeout waiting authorization response");
+                _logger.LogError("Timeout waiting authorization response");
                 throw new BitmexSocketAuthorizationException("Authorization Failed: timeout waiting authorization response");
             }
 
             if (response?.Success ?? false)
             {
-                Log.Info("Authorized successfully...");
+                _logger.LogInformation("Authorized successfully...");
                 _isAuthorized = true;
                 return IsAuthorized;
             }
             else
             {
-                Log.Error($"Not authorized {error}");
+                _logger.LogError($"Not authorized {error}");
                 throw new BitmexSocketAuthorizationException(error, data);
             }
         }
@@ -337,7 +337,7 @@ namespace Bitmex.NET
             if (UnsubscribeResponse.TryParse(jsonElement, OnUnsubscribeResponse)) return;
             if (WelcomeInfoResponse.TryParse(jsonElement, OnWelcomeInfoResponse)) return;
 
-            Log.Warn($"Unknown type message.{e.Message}");
+            _logger.LogWarning($"Unknown type message.{e.Message}");
         }
 
         public static IBitmexApiSocketService CreateDefaultApi(IBitmexAuthorization bitmexAuthorization)
@@ -357,7 +357,7 @@ namespace Bitmex.NET
                 {
                     // TO DO: 释放托管状态(托管对象)。
                     _bitmexApiSocketProxy?.Dispose();
-                    Log.Info("Disposed...");
+                    _logger.LogInformation("Disposed...");
                 }
 
                 // TO DO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。

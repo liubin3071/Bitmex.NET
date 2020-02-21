@@ -1,24 +1,18 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading;
-using Bitmex.NET.Dtos;
-using Bitmex.NET.Dtos.Socket;
-using Bitmex.NET.Logging;
-using Bitmex.NET.Models;
+﻿using Bitmex.NET.Models;
 using Bitmex.NET.Models.Socket;
 using Bitmex.NET.Models.Socket.Events;
-using Bitmex.NET.Models.Socket.Responses;
-using Bitmex.NET.Models.Socket.Responses.OperationResponses;
-using Bitmex.NET.Models.Socket.Responses.RawResponses;
-using Bitmex.NET.Models.Socket.Responses.TableResponses;
+using Microsoft.Extensions.Logging;
 using SuperSocket.ClientEngine;
+using System;
+using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
 using WebSocket4Net;
 
 namespace Bitmex.NET
 {
     public class BitmexApiSocketProxy : IBitmexApiSocketProxy
     {
-        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        private readonly ILogger _logger;
         private const int SocketMessageResponseTimeout = 10000;
         private readonly ManualResetEvent _welcomeReceived = new ManualResetEvent(false);
         private readonly IBitmexAuthorization _bitmexAuthorization;
@@ -33,9 +27,10 @@ namespace Bitmex.NET
 
         public bool IsAlive => _socketConnection?.State == WebSocketState.Open;
 
-        public BitmexApiSocketProxy(IBitmexAuthorization bitmexAuthorization)
+        public BitmexApiSocketProxy(IBitmexAuthorization bitmexAuthorization, ILogger<BitmexApiSocketProxy>? logger = null)
         {
             _bitmexAuthorization = bitmexAuthorization;
+            _logger = logger ?? NullLogger<BitmexApiSocketProxy>.Instance;
         }
 
         public bool Connect()
@@ -45,7 +40,7 @@ namespace Bitmex.NET
             BitmexWelcomeMessage welcomeData = null;
             EventHandler<MessageReceivedEventArgs> welcomeMessageReceived = (sender, e) =>
             {
-                Log.Debug($"Welcome Data Received {e.Message}");
+                _logger.LogDebug($"Welcome Data Received {e.Message}");
                 welcomeData = BitmexJsonSerializer.Deserialize<BitmexWelcomeMessage>(e.Message);
                 _welcomeReceived.Set();
             };
@@ -55,19 +50,19 @@ namespace Bitmex.NET
             _socketConnection.MessageReceived -= welcomeMessageReceived;
             if (waitResult && (welcomeData?.Limit?.Remaining ?? 0) == 0)
             {
-                Log.Error("Bitmext connection limit reached");
+                _logger.LogError("Bitmext connection limit reached");
                 throw new BitmexWebSocketLimitReachedException();
             }
 
             if (!waitResult)
             {
-                Log.Error("Open connection timeout. Welcome message is not received");
+                _logger.LogError("Open connection timeout. Welcome message is not received");
                 return false;
             }
 
             if (IsAlive)
             {
-                Log.Info("Bitmex web socket connection opened");
+                _logger.LogInformation("Bitmex web socket connection opened");
                 _socketConnection.MessageReceived += SocketConnectionOnMessageReceived;
                 _socketConnection.Closed += SocketConnectionOnClosed;
                 _socketConnection.Error += SocketConnectionOnError;
@@ -80,7 +75,7 @@ namespace Bitmex.NET
         {
             if (_socketConnection != null)
             {
-                Log.Debug("Closing existing connection");
+                _logger.LogDebug("Closing existing connection");
                 using (_socketConnection)
                 {
                     _socketConnection.MessageReceived -= SocketConnectionOnMessageReceived;
@@ -95,7 +90,7 @@ namespace Bitmex.NET
 
         private void SocketConnectionOnMessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            Log.Debug($"Message received {e.Message}");
+            _logger.LogDebug($"Message received {e.Message}");
             OnMessage(new BitmexSocketMessageEventArgs(e.Message));
         }
 
@@ -118,19 +113,19 @@ namespace Bitmex.NET
             where TRequest : SocketRequest
         {
             //var json = BitmexJsonSerializer.Serialize(message);
-            Log.Debug($"Sending message : {request.GetContent()}");
+            _logger.LogDebug($"Sending message : {request.GetContent()}");
             _socketConnection.Send(request.GetContent());
         }
 
         protected virtual void OnConnectionErrorReceived(ErrorEventArgs args)
         {
-            Log.Error(args.Exception, "Socket connection");
+            _logger.LogError(args.Exception, "Socket connection");
             ErrorOccurred?.Invoke(this, new BitmextErrorEventArgs(args.Exception));
         }
 
         protected virtual void OnConnectionClosed()
         {
-            Log.Debug("Connection closed");
+            _logger.LogDebug("Connection closed");
             Closed?.Invoke(this, new BitmexCloseEventArgs());
         }
 
@@ -148,7 +143,7 @@ namespace Bitmex.NET
                     CloseConnectionIfItsNotNull();
                     _welcomeReceived?.Dispose();
                     _socketConnection?.Dispose();
-                    Log.Info("Disposed...");
+                    _logger.LogInformation("Disposed...");
                 }
 
                 // TO DO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
