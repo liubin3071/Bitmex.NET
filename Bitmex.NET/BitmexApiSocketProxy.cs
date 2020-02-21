@@ -1,275 +1,176 @@
-﻿using Bitmex.NET.Dtos.Socket;
-using System;
-using System.Buffers;
-using System.Linq;
-using Bitmex.NET.Dtos;
+﻿using Bitmex.NET.Models;
+using Bitmex.NET.Models.Socket;
 using Bitmex.NET.Models.Socket.Events;
-using Bitmex.NET.Models.Socket.Responses;
-using Bitmex.NET.Models.Socket.Responses.OperationResponses;
-using Bitmex.NET.Models.Socket.Responses.RawResponses;
-using Bitmex.NET.Models.Socket.Responses.TableResponses;
+using Microsoft.Extensions.Logging;
+using SuperSocket.ClientEngine;
+using System;
+using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
+using WebSocket4Net;
 
 namespace Bitmex.NET
 {
-    public partial class BitmexApiSocketService
+    public class BitmexApiSocketProxy : IBitmexApiSocketProxy
     {
-        public event EventHandler<ResponseEventArgs<WelcomeInfoResponse>>? WelcomeInfoResponseReceived;
+        private readonly BitmexEnvironment _bitmexEnvironment;
+        private readonly ILogger _logger;
+        private const int SocketMessageResponseTimeout = 10000;
+        private readonly ManualResetEvent _welcomeReceived = new ManualResetEvent(false);
 
-        public event EventHandler<ResponseEventArgs<UnsubscribeResponse>>? UnsubscribeResponseReceived;
+        public event EventHandler<BitmexSocketMessageEventArgs>? MessageReceived;
 
-        public event EventHandler<ResponseEventArgs<SubscribeResponse>>? SubscribeResponseReceived;
+        public event EventHandler<BitmextErrorEventArgs>? ErrorOccurred;
 
-        //public event EventHandler<ResponseEventArgs<ErrorResponse>>? ErrorResponseReceived;
+        public event EventHandler<BitmexCloseEventArgs>? Closed;
 
-        public event EventHandler<ResponseEventArgs<CancelAllAfterResponse>>? CancelAllAfterResponseReceived;
+#pragma warning disable CA2213 // Disposable fields should be disposed
+        private WebSocket? _socketConnection;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
-        public event EventHandler<ResponseEventArgs<AuthenticationResponse>>? AuthenticationReceived;
+        public bool IsAlive => _socketConnection?.State == WebSocketState.Open;
 
-        public event EventHandler<ResponseEventArgs<PongResponse>>? PongResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<WalletDto>>>? WalletResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TransactionDto>>>? TransactionResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<SettlementDto>>>? SettlementResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>>? Quote5MResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>>? Quote1MResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>>? Quote1HResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>>? Quote1DResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<QuoteDto>>>? QuoteResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<NotificationDto>>>? PublicNotificationResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<NotificationDto>>>? PrivateNotificationResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<OrderBookDto>>>? OrderBookL225ResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<OrderBookDto>>>? OrderBookL2ResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<OrderBook10Dto>>>? OrderBook10ResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<OrderDto>>>? OrderResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<MarginDto>>>? MarginResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<LiquidationDto>>>? LiquidationResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<InsuranceDto>>>? InsuranceResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<InstrumentDto>>>? InstrumentResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<FundingDto>>>? FundingResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<ExecutionDto>>>? ExecutionResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<ChatConnectedDto>>>? ChatConnectedResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<ChatDto>>>? ChatResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<AnnouncementDto>>>? AnnouncementResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<AffiliateDto>>>? AffiliateResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>>? TradeBucketed1DResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>>? TradeBucketed1HResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>>? TradeBucketed5MResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TradeBucketedDto>>>? TradeBucketed1MResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<PositionDto>>>? PositionResponseReceived;
-
-        public event EventHandler<ResponseEventArgs<TableResponse<TradeDto>>>? TradeResponseReceived;
-
-        protected virtual void OnWalletResponse(TableResponse<WalletDto> response)
+        public BitmexApiSocketProxy(BitmexEnvironment bitmexEnvironment, ILogger<BitmexApiSocketProxy>? logger = null)
         {
-            WalletResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<WalletDto>>(response));
+            _bitmexEnvironment = bitmexEnvironment;
+            _logger = logger ?? NullLogger<BitmexApiSocketProxy>.Instance;
         }
 
-        protected virtual void OnTransactionResponse(TableResponse<TransactionDto> response)
+        public bool Connect()
         {
-            TransactionResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TransactionDto>>(response));
+            CloseConnectionIfItsNotNull();
+            _socketConnection = new WebSocket($"wss://{Environments.Values[_bitmexEnvironment]}/realtime") { EnableAutoSendPing = true, AutoSendPingInterval = 2 };
+            BitmexWelcomeMessage welcomeData = null;
+            EventHandler<MessageReceivedEventArgs> welcomeMessageReceived = (sender, e) =>
+            {
+                _logger.LogDebug($"Welcome Data Received {e.Message}");
+                welcomeData = BitmexJsonSerializer.Deserialize<BitmexWelcomeMessage>(e.Message);
+                _welcomeReceived.Set();
+            };
+            _socketConnection.MessageReceived += welcomeMessageReceived;
+            _socketConnection.Open();
+            var waitResult = _welcomeReceived.WaitOne(SocketMessageResponseTimeout);
+            _socketConnection.MessageReceived -= welcomeMessageReceived;
+            if (waitResult && (welcomeData?.Limit?.Remaining ?? 0) == 0)
+            {
+                _logger.LogError("Bitmex connection limit reached");
+                throw new BitmexWebSocketLimitReachedException();
+            }
+
+            if (!waitResult)
+            {
+                _logger.LogError("Open connection timeout. Welcome message is not received");
+                return false;
+            }
+
+            if (IsAlive)
+            {
+                _logger.LogInformation("Bitmex web socket connection opened");
+                _socketConnection.MessageReceived += SocketConnectionOnMessageReceived;
+                _socketConnection.Closed += SocketConnectionOnClosed;
+                _socketConnection.Error += SocketConnectionOnError;
+            }
+
+            return IsAlive;
         }
 
-        protected virtual void OnSettlementResponse(TableResponse<SettlementDto> response)
+        private void CloseConnectionIfItsNotNull()
         {
-            SettlementResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<SettlementDto>>(response));
+            if (_socketConnection != null)
+            {
+                _logger.LogDebug("Closing existing connection");
+                using (_socketConnection)
+                {
+                    _socketConnection.MessageReceived -= SocketConnectionOnMessageReceived;
+                    _socketConnection.Closed -= SocketConnectionOnClosed;
+                    _socketConnection.Error -= SocketConnectionOnError;
+                    _welcomeReceived.Reset();
+                    _socketConnection.Close();
+                    _socketConnection = null;
+                }
+            }
         }
 
-        protected virtual void OnQuote5MResponse(TableResponse<QuoteDto> response)
+        private void SocketConnectionOnMessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            Quote5MResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<QuoteDto>>(response));
+            _logger.LogDebug($"Message received {e.Message}");
+            OnMessage(new BitmexSocketMessageEventArgs(e.Message));
         }
 
-        protected virtual void OnQuote1MResponse(TableResponse<QuoteDto> response)
+        protected virtual void OnMessage(BitmexSocketMessageEventArgs args)
         {
-            Quote1MResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<QuoteDto>>(response));
+            MessageReceived?.Invoke(this, args);
         }
 
-        protected virtual void OnQuote1HResponse(TableResponse<QuoteDto> response)
+        private void SocketConnectionOnError(object sender, ErrorEventArgs e)
         {
-            Quote1HResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<QuoteDto>>(response));
+            OnConnectionErrorReceived(e);
         }
 
-        protected virtual void OnQuote1DResponse(TableResponse<QuoteDto> response)
+        private void SocketConnectionOnClosed(object sender, EventArgs e)
         {
-            Quote1DResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<QuoteDto>>(response));
+            OnConnectionClosed();
         }
 
-        protected virtual void OnQuoteResponse(TableResponse<QuoteDto> response)
+        public void Send<TRequest>(TRequest request)
+            where TRequest : SocketRequest
         {
-            QuoteResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<QuoteDto>>(response));
+            //var json = BitmexJsonSerializer.Serialize(message);
+            _logger.LogDebug($"Sending message : {request.GetContent()}");
+            _socketConnection.Send(request.GetContent());
         }
 
-        protected virtual void OnPublicNotificationResponse(TableResponse<NotificationDto> response)
+        protected virtual void OnConnectionErrorReceived(ErrorEventArgs args)
         {
-            PublicNotificationResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<NotificationDto>>(response));
+            _logger.LogError(args.Exception, "Socket connection");
+            ErrorOccurred?.Invoke(this, new BitmextErrorEventArgs(args.Exception));
         }
 
-        protected virtual void OnPrivateNotificationResponse(TableResponse<NotificationDto> response)
+        protected virtual void OnConnectionClosed()
         {
-            PrivateNotificationResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<NotificationDto>>(response));
+            _logger.LogDebug("Connection closed");
+            Closed?.Invoke(this, new BitmexCloseEventArgs());
         }
 
-        protected virtual void OnOrderBookL225Response(TableResponse<OrderBookDto> response)
+        #region IDisposable Support
+
+        private bool _disposedValue = false; // 要检测冗余调用
+
+        protected virtual void Dispose(bool disposing)
         {
-            OrderBookL225ResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<OrderBookDto>>(response));
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    // TO DO: 释放托管状态(托管对象)。
+                    CloseConnectionIfItsNotNull();
+                    _welcomeReceived?.Dispose();
+                    _socketConnection?.Dispose();
+                    _logger.LogInformation("Disposed...");
+                }
+
+                // TO DO: 释放未托管的资源(未托管的对象)并在以下内容中替代终结器。
+                // TO DO: 将大型字段设置为 null。
+
+                _disposedValue = true;
+            }
         }
 
-        protected virtual void OnOrderBookL2Response(TableResponse<OrderBookDto> response)
+        // TO DO: 仅当以上 Dispose(bool disposing) 拥有用于释放未托管资源的代码时才替代终结器。
+        // ~BitmexApiSocketProxy()
+        // {
+        //   // 请勿更改此代码。将清理代码放入以上 Dispose(bool disposing) 中。
+        //   Dispose(false);
+        // }
+
+        // 添加此代码以正确实现可处置模式。
+        public void Dispose()
         {
-            OrderBookL2ResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<OrderBookDto>>(response));
+            // 请勿更改此代码。将清理代码放入以上 Dispose(bool disposing) 中。
+            Dispose(true);
+            // TO DO: 如果在以上内容中替代了终结器，则取消注释以下行。
+            // GC.SuppressFinalize(this);
         }
 
-        protected virtual void OnOrderBook10Response(TableResponse<OrderBook10Dto> response)
-        {
-            OrderBook10ResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<OrderBook10Dto>>(response));
-        }
-
-        protected virtual void OnOrderResponse(TableResponse<OrderDto> response)
-        {
-            OrderResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<OrderDto>>(response));
-        }
-
-        protected virtual void OnMarginResponse(TableResponse<MarginDto> response)
-        {
-            MarginResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<MarginDto>>(response));
-        }
-
-        protected virtual void OnLiquidationResponse(TableResponse<LiquidationDto> response)
-        {
-            LiquidationResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<LiquidationDto>>(response));
-        }
-
-        protected virtual void OnInsuranceResponse(TableResponse<InsuranceDto> response)
-        {
-            InsuranceResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<InsuranceDto>>(response));
-        }
-
-        protected virtual void OnInstrumentResponse(TableResponse<InstrumentDto> response)
-        {
-            InstrumentResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<InstrumentDto>>(response));
-        }
-
-        protected virtual void OnFundingResponse(TableResponse<FundingDto> response)
-        {
-            FundingResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<FundingDto>>(response));
-        }
-
-        protected virtual void OnExecutionResponse(TableResponse<ExecutionDto> response)
-        {
-            ExecutionResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<ExecutionDto>>(response));
-        }
-
-        protected virtual void OnChatConnectedResponse(TableResponse<ChatConnectedDto> response)
-        {
-            ChatConnectedResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<ChatConnectedDto>>(response));
-        }
-
-        protected virtual void OnChatResponse(TableResponse<ChatDto> response)
-        {
-            ChatResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<ChatDto>>(response));
-        }
-
-        protected virtual void OnAnnouncementResponse(TableResponse<AnnouncementDto> response)
-        {
-            AnnouncementResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<AnnouncementDto>>(response));
-        }
-
-        protected virtual void OnAffiliateResponse(TableResponse<AffiliateDto> response)
-        {
-            AffiliateResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<AffiliateDto>>(response));
-        }
-
-        protected virtual void OnTradeBucketed1DResponse(TableResponse<TradeBucketedDto> response)
-        {
-            TradeBucketed1DResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TradeBucketedDto>>(response));
-        }
-
-        protected virtual void OnTradeBucketed1HResponse(TableResponse<TradeBucketedDto> response)
-        {
-            TradeBucketed1HResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TradeBucketedDto>>(response));
-        }
-
-        protected virtual void OnTradeBucketed5MResponse(TableResponse<TradeBucketedDto> response)
-        {
-            TradeBucketed5MResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TradeBucketedDto>>(response));
-        }
-
-        protected virtual void OnTradeBucketed1MResponse(TableResponse<TradeBucketedDto> response)
-        {
-            TradeBucketed1MResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TradeBucketedDto>>(response));
-        }
-
-        protected virtual void OnPositionResponse(TableResponse<PositionDto> response)
-        {
-            PositionResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<PositionDto>>(response));
-        }
-
-        protected virtual void OnTradeResponse(TableResponse<TradeDto> response)
-        {
-            TradeResponseReceived?.Invoke(this, new ResponseEventArgs<TableResponse<TradeDto>>(response));
-        }
-
-        protected virtual void OnWelcomeInfoResponse(WelcomeInfoResponse response)
-        {
-            WelcomeInfoResponseReceived?.Invoke(this, new ResponseEventArgs<WelcomeInfoResponse>(response));
-        }
-
-        protected virtual void OnUnsubscribeResponse(UnsubscribeResponse response)
-        {
-            UnsubscribeResponseReceived?.Invoke(this, new ResponseEventArgs<UnsubscribeResponse>(response));
-        }
-
-        protected virtual void OnSubscribeResponse(SubscribeResponse response)
-        {
-            SubscribeResponseReceived?.Invoke(this, new ResponseEventArgs<SubscribeResponse>(response));
-        }
-
-        //protected virtual void OnErrorResponse(ErrorResponse response)
-        //{
-        //    ErrorResponseReceived?.Invoke(this, new ResponseEventArgs<ErrorResponse>(response));
-        //}
-
-        protected virtual void OnCancelAllAfterResponse(CancelAllAfterResponse response)
-        {
-            CancelAllAfterResponseReceived?.Invoke(this, new ResponseEventArgs<CancelAllAfterResponse>(response));
-        }
-
-        protected virtual void OnAuthenticationResponse(AuthenticationResponse response)
-        {
-            AuthenticationReceived?.Invoke(this, new ResponseEventArgs<AuthenticationResponse>(response));
-        }
-
-        protected virtual void OnPongResponse(PongResponse response)
-        {
-            PongResponseReceived?.Invoke(this, new ResponseEventArgs<PongResponse>(response));
-        }
+        #endregion IDisposable Support
     }
 }
